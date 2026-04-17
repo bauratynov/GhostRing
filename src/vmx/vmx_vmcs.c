@@ -329,11 +329,25 @@ gr_vmx_enter_root(gr_vmx_vcpu_t *vcpu)
     vcpu->host_regs.cr0 = cr0;
 
     uint64_t cr4 = vcpu->host_regs.cr4;
+    GR_LOG("vmx: CR4 before adjust=", cr4);
+    GR_LOG("vmx: CR0_FIXED0 msr=", vcpu->vmx_msr[6]);
+    GR_LOG("vmx: CR0_FIXED1 msr=", vcpu->vmx_msr[7]);
+    GR_LOG("vmx: CR4_FIXED0 msr=", vcpu->vmx_msr[8]);
+    GR_LOG("vmx: CR4_FIXED1 msr=", vcpu->vmx_msr[9]);
     cr4 |= (uint32_t)(vcpu->vmx_msr[8]);          /* CR4_FIXED0: must-be-1 */
     cr4 &= (uint32_t)(vcpu->vmx_msr[9]);          /* CR4_FIXED1: must-be-0 */
     cr4 |= BIT(13);    /* CR4.VMXE — required before VMXON */
     gr_wrcr4(cr4);
-    vcpu->host_regs.cr4 = cr4;
+    /* Read it back — some hypervisors silently drop writes we're relying on. */
+    uint64_t cr4_rb = gr_read_cr4();
+    GR_LOG("vmx: CR4 written=", cr4);
+    GR_LOG("vmx: CR4 readback=", cr4_rb);
+    if ((cr4_rb & BIT(13)) == 0) {
+        GR_LOG_STR("vmx: CR4.VMXE bit did not stick — outer HV blocked it");
+        return false;
+    }
+    vcpu->host_regs.cr4 = cr4_rb;
+    cr4 = cr4_rb;
 
     /*
      * Step 8: Enter VMX root operation.
