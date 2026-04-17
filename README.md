@@ -1,4 +1,6 @@
-# GhostRing
+<p align="center">
+  <img src="docs/logo.png" alt="GhostRing" width="520"/>
+</p>
 
 [![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
 [![License: Apache 2.0 + GPL v2](https://img.shields.io/badge/License-Apache%202.0%20%2B%20GPLv2-blue.svg)](LICENSE)
