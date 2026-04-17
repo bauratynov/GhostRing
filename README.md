@@ -1,5 +1,10 @@
 # GhostRing
 
+[![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Language: C99](https://img.shields.io/badge/Language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
+[![Platform: x86_64](https://img.shields.io/badge/Platform-x86__64-green.svg)](https://en.wikipedia.org/wiki/X86-64)
+
 Lightweight open-source hypervisor for endpoint security. Runs beneath the
 operating system (Ring -1) using Intel VT-x and AMD-V hardware virtualization
 to provide invisible kernel integrity monitoring, rootkit detection, and memory
