@@ -12,6 +12,36 @@
 #include "serial.h"
 #include "cpu.h"
 
+#ifdef __KERNEL__
+#include <linux/printk.h>
+/*
+ * When built as part of the Linux kernel module we mirror every line
+ * written to COM1 into dmesg as well.  This makes the step-level VMX
+ * diagnostics (GR_LOG_STR / GR_LOG) visible to the operator without
+ * requiring a host-side serial port capture — critical when the
+ * hypervisor is loaded inside Hyper-V / cloud VMs with no COM1 exposed.
+ */
+static char _gr_klog_buf[256];
+static int  _gr_klog_len;
+
+static void _gr_klog_flush(void)
+{
+    if (_gr_klog_len > 0) {
+        _gr_klog_buf[_gr_klog_len] = '\0';
+        pr_info("GhostRing/serial: %s\n", _gr_klog_buf);
+        _gr_klog_len = 0;
+    }
+}
+
+static void _gr_klog_putc(char c)
+{
+    if (c == '\r') return;                  /* drop CRs, pr_info adds \n */
+    if (c == '\n') { _gr_klog_flush(); return; }
+    if (_gr_klog_len >= (int)sizeof(_gr_klog_buf) - 1) _gr_klog_flush();
+    _gr_klog_buf[_gr_klog_len++] = c;
+}
+#endif /* __KERNEL__ */
+
 /* ── I/O port helpers ────────────────────────────────────────────────────── */
 
 static inline void outb(uint16_t port, uint8_t val)
@@ -72,6 +102,15 @@ void gr_serial_init(void)
 
 void gr_serial_putc(char c)
 {
+#ifdef __KERNEL__
+    /*
+     * In kernel-module mode route output to dmesg and skip the raw
+     * 0x3F8 write entirely — many hypervisors (Hyper-V Gen 1) don't
+     * emulate COM1, which would hang gr_serial_putc in the LSR poll.
+     */
+    _gr_klog_putc(c);
+    return;
+#else
     uint16_t port = GR_COM1_PORT;
 
     /* Convert bare newlines to CR+LF for terminal compatibility. */
@@ -85,6 +124,7 @@ void gr_serial_putc(char c)
     }
 
     outb(port + UART_DATA, (uint8_t)c);
+#endif
 }
 
 /* ── String output ───────────────────────────────────────────────────────── */

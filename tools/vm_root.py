@@ -4,8 +4,8 @@ import sys
 import paramiko
 import time
 
-HOST = "localhost"
-PORT = 2222
+HOST = "172.19.208.100"
+PORT = 22
 USER = "ghostring"
 PASS = "ghost"
 ROOT_PASS = "123"

@@ -3,8 +3,8 @@
 import sys
 import paramiko
 
-HOST = "localhost"
-PORT = 2222
+HOST = "172.19.208.100"
+PORT = 22
 USER = "root"
 PASS = "123"
 
