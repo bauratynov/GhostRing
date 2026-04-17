@@ -9,35 +9,37 @@
 
 KDIR ?= /lib/modules/$(shell uname -r)/build
 PWD  := $(shell pwd)
-SRC  := $(src)/../../src
 
 obj-m := ghostring.o
 
-# Object files — must match actual source file names
+#
+# Relative paths for kbuild.  Kbuild parses obj-m entries relative
+# to the directory containing this Makefile (what we pass as M=).
+# So we use ../../src/... paths — kbuild resolves them internally.
+#
 ghostring-objs := ghostring_kmod.o \
                   ghostring_chardev.o \
-                  $(SRC)/common/globals.o \
-                  $(SRC)/common/serial.o \
-                  $(SRC)/common/mem.o \
-                  $(SRC)/common/glue.o \
-                  $(SRC)/vmx/vmx_vmcs.o \
-                  $(SRC)/vmx/vmx_ept.o \
-                  $(SRC)/vmx/vmx_exit.o \
-                  $(SRC)/vmx/vmx_asm.o \
-                  $(SRC)/monitor/monitor.o \
-                  $(SRC)/monitor/integrity.o \
-                  $(SRC)/monitor/msr_guard.o \
-                  $(SRC)/monitor/dkom.o \
-                  $(SRC)/monitor/hooks.o \
-                  $(SRC)/monitor/ssdt.o \
-                  $(SRC)/monitor/driver_obj.o \
-                  $(SRC)/monitor/code_inject.o \
-                  $(SRC)/monitor/ransomware.o \
-                  $(SRC)/monitor/cr_guard.o \
-                  $(SRC)/monitor/shadow_stack.o \
-                  $(SRC)/hypercall/hypercall.o
+                  ../../src/common/globals.o \
+                  ../../src/common/serial.o \
+                  ../../src/common/mem.o \
+                  ../../src/common/glue.o \
+                  ../../src/vmx/vmx_vmcs.o \
+                  ../../src/vmx/vmx_ept.o \
+                  ../../src/vmx/vmx_exit.o \
+                  ../../src/vmx/vmx_asm.o \
+                  ../../src/monitor/monitor.o \
+                  ../../src/monitor/integrity.o \
+                  ../../src/monitor/msr_guard.o \
+                  ../../src/monitor/dkom.o \
+                  ../../src/monitor/hooks.o \
+                  ../../src/monitor/ssdt.o \
+                  ../../src/monitor/driver_obj.o \
+                  ../../src/monitor/code_inject.o \
+                  ../../src/monitor/ransomware.o \
+                  ../../src/monitor/cr_guard.o \
+                  ../../src/monitor/shadow_stack.o \
+                  ../../src/hypercall/hypercall.o
 
-# Include paths for all subsystem headers
 ccflags-y := -I$(src)/../../src \
              -I$(src)/../../src/common \
              -I$(src)/../../src/vmx \
@@ -46,10 +48,9 @@ ccflags-y := -I$(src)/../../src \
              -I$(src)/../../src/hypercall \
              -DGHOSTRING_VTX=1 \
              -DGHOSTRING_SVM=0 \
-             -std=gnu99 \
-             -Wno-declaration-after-statement
+             -Wno-declaration-after-statement \
+             -Wno-unused-function
 
-# Assembly files need gas syntax flag
 AFLAGS_vmx_asm.o := -D__ASSEMBLY__
 
 all:
@@ -57,7 +58,7 @@ all:
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
-	find $(SRC) -name '*.o' -delete
+	find ../../src -name '*.o' -delete 2>/dev/null || true
 
 install:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules_install

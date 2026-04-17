@@ -73,33 +73,38 @@ static uint32_t crc32_software(const uint8_t *data, uint64_t len)
 
 /*
  * Uses the CRC32C (Castagnoli) polynomial via the SSE4.2 CRC32
- * instruction.  This is a different polynomial from IEEE 802.3 but is
- * equally effective for integrity detection — we just need consistency
- * between init and check.
+ * instruction.  Requires -msse4.2 to enable __builtin_ia32_crc32*.
+ *
+ * Kernel builds: SSE is disabled in kernel code by default, and the
+ * kernel has its own crc32c helper in <linux/crc32c.h>.  Use that
+ * instead when building as a kernel module.
  */
-static uint32_t crc32_hardware(const uint8_t *data, uint64_t len)
-{
-    uint32_t crc = 0xFFFFFFFF;
-    uint64_t i = 0;
+#ifdef __KERNEL__
+  #include <linux/crc32c.h>
+  static uint32_t crc32_hardware(const uint8_t *data, uint64_t len)
+  {
+      /* Kernel's crc32c uses same polynomial (Castagnoli) */
+      return crc32c(0xFFFFFFFF, data, len) ^ 0xFFFFFFFF;
+  }
+#else
+  static uint32_t crc32_hardware(const uint8_t *data, uint64_t len)
+  {
+      uint32_t crc = 0xFFFFFFFF;
+      uint64_t i = 0;
 
-    /* Process 8 bytes at a time when possible for throughput. */
-    for (; i + 8 <= len; i += 8) {
-        uint64_t val;
-        /*
-         * Read via memcpy-equivalent to avoid strict-aliasing issues.
-         * The compiler will optimise this to a single MOV.
-         */
-        const uint8_t *p = data + i;
-        val = *(const uint64_t *)p;
-        crc = (uint32_t)__builtin_ia32_crc32di(crc, val);
-    }
+      for (; i + 8 <= len; i += 8) {
+          uint64_t val;
+          const uint8_t *p = data + i;
+          val = *(const uint64_t *)p;
+          crc = (uint32_t)__builtin_ia32_crc32di(crc, val);
+      }
 
-    /* Handle the remaining tail bytes one at a time. */
-    for (; i < len; i++)
-        crc = __builtin_ia32_crc32qi(crc, data[i]);
+      for (; i < len; i++)
+          crc = __builtin_ia32_crc32qi(crc, data[i]);
 
-    return crc ^ 0xFFFFFFFF;
-}
+      return crc ^ 0xFFFFFFFF;
+  }
+#endif
 
 /* ── Public API ─────────────────────────────────────────────────────────── */
 

@@ -142,7 +142,7 @@ bool gr_ransom_check_write(gr_ransom_state_t *state,
                       gpa,
                       guest_cr3);  /* info = CR3 for process attribution */
 
-        GR_LOG("ransom: CANARY WRITE DETECTED — ransomware suspected!");
+        GR_LOG_STR("ransom: CANARY WRITE DETECTED — ransomware suspected!");
         GR_LOG("  canary index=", (uint64_t)canary->index);
         GR_LOG("  guest_rip=", guest_rip);
         GR_LOG("  guest_cr3=", guest_cr3);

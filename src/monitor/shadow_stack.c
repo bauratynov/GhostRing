@@ -239,7 +239,7 @@ bool gr_shadow_check(gr_shadow_stack_mgr_t *mgr,
                   0,              /* GPA not applicable */
                   ret_addr);      /* info = actual (corrupted) return addr */
 
-    GR_LOG("shadow_stack: ROP DETECTED — return address mismatch!");
+    GR_LOG_STR("shadow_stack: ROP DETECTED — return address mismatch!");
     GR_LOG("  rip=", rip);
     GR_LOG("  expected=", expected);
     GR_LOG("  actual=",   ret_addr);

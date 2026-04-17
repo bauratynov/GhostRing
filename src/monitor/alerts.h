@@ -83,6 +83,14 @@ GR_STATIC_ASSERT(sizeof(gr_alert_t) <= CACHELINE_SIZE,
 /* ── Alert emission helper ──────────────────────────────────────────────── */
 
 /*
+ * External alert sink — implemented by the loader (Linux chardev,
+ * Windows DeviceIoControl, UEFI console).  Forward-declared here so
+ * that freestanding monitor code can call it without including
+ * loader-specific headers.
+ */
+void gr_alert_push(uint32_t cpu, uint32_t type, uint64_t info);
+
+/*
  * Read the TSC and current CPU ID, fill in the common fields, then push
  * through the chardev ring buffer.  Designed to be called from within
  * VM-exit handlers where latency matters — no heap allocation, no locks

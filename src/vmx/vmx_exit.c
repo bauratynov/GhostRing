@@ -390,7 +390,7 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
      */
     case EXIT_REASON_EPT_MISCONFIG: {
         uint64_t gpa = gr_vmread(VMCS_GUEST_PHYS_ADDR);
-        GR_LOG("FATAL: EPT misconfiguration at GPA ");
+        GR_LOG("FATAL: EPT misconfiguration at GPA ", (uint64_t)0);
         gr_serial_hex64(gpa);
         gr_serial_puts("\n");
         for (;;)
@@ -402,7 +402,7 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
         /*
          * Unexpected exit reason — log and halt for debugging.
          */
-        GR_LOG("FATAL: unhandled VM-exit reason ");
+        GR_LOG("FATAL: unhandled VM-exit reason ", (uint64_t)0);
         gr_serial_dec((uint64_t)exit_reason);
         gr_serial_puts(" at RIP ");
         gr_serial_hex64(gr_vmread(VMCS_GUEST_RIP));

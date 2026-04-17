@@ -303,12 +303,28 @@ static int __init ghostring_init(void)
 
 	gr_params.vendor = (gr_cpu_vendor == GR_CPUID_VENDOR_INTEL)
 	                 ? GR_CPU_INTEL : GR_CPU_AMD;
-	gr_params.system_cr3 = __pa(current->mm ? current->mm->pgd
-	                                        : init_mm.pgd);
-	/* Kernel text boundaries — architecture-specific */
-	extern char _text[], _etext[];
-	gr_params.kernel_text_start = __pa(_text);
-	gr_params.kernel_text_size  = (uint64_t)(_etext - _text);
+	/*
+	 * System CR3: use the current task's page table.  For a module
+	 * loaded via insmod, current->mm is the insmod process's mm.
+	 * For kernel-wide monitoring we'd need init_mm, but that symbol
+	 * is not exported to modules.  Use current CR3 read via MSR/asm
+	 * instead — works for any context.
+	 */
+	{
+		unsigned long cr3;
+		asm volatile("mov %%cr3, %0" : "=r"(cr3));
+		gr_params.system_cr3 = cr3;
+	}
+
+	/*
+	 * Kernel text boundaries — _text and _etext are not exported to
+	 * modules since CONFIG_KALLSYMS can expose them via kallsyms_lookup_name
+	 * (also no longer exported since 5.7).  For Phase 1 we pass zeros;
+	 * the integrity monitor will detect this and skip kernel text
+	 * protection until the loader provides real addresses via hypercall.
+	 */
+	gr_params.kernel_text_start = 0;
+	gr_params.kernel_text_size  = 0;
 
 	/* 7. Broadcast VMX init to every online CPU */
 	on_each_cpu(gr_per_cpu_init, NULL, 1);

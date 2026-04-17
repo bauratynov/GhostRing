@@ -16,6 +16,28 @@
 #include "msr_guard.h"
 #include "alerts.h"
 
+/*
+ * MSR indices (Intel SDM Vol. 4).  Kernel's msr-index.h uses slightly
+ * different names (MSR_IA32_SYSENTER_CS → MSR_IA32_SYSENTER_CS, etc.)
+ * and sometimes doesn't define SYSENTER_EIP/ESP for 64-bit.  Define
+ * what we need ourselves to avoid dependency on specific kernel headers.
+ */
+#ifndef GR_MSR_INDICES_DEFINED
+#define GR_MSR_INDICES_DEFINED
+#undef MSR_IA32_SYSENTER_CS
+#undef MSR_IA32_SYSENTER_ESP
+#undef MSR_IA32_SYSENTER_EIP
+#undef MSR_IA32_EFER
+#undef MSR_IA32_LSTAR
+#undef MSR_IA32_STAR
+#define MSR_IA32_LSTAR              0xC0000082
+#define MSR_IA32_STAR               0xC0000081
+#define MSR_IA32_SYSENTER_CS        0x00000174
+#define MSR_IA32_SYSENTER_ESP       0x00000175
+#define MSR_IA32_SYSENTER_EIP       0x00000176
+#define MSR_IA32_EFER               0xC0000080
+#endif
+
 /* ── MSR bitmap layout constants ────────────────────────────────────────── */
 
 /*

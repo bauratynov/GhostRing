@@ -174,10 +174,15 @@ gr_vmx_ept_init(gr_ept_ctx_t *ctx)
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 /*
- * Platform-provided page allocator (must return a zeroed, page-aligned page).
- * Declared extern; the platform layer must supply the implementation.
+ * Use the platform allocator from platform.h for contiguous page alloc.
+ * Simple wrapper since this file needs a single zeroed page.
  */
-extern void *gr_alloc_page(void);
+#include "../common/platform.h"
+
+static inline void *gr_ept_alloc_page(void)
+{
+    return gr_platform_alloc_pages(1);
+}
 
 int
 gr_vmx_ept_protect_page(gr_ept_ctx_t *ctx,
@@ -197,7 +202,7 @@ gr_vmx_ept_protect_page(gr_ept_ctx_t *ctx,
      * full 4KB page table before adjusting a single page.
      */
     if (pde->large) {
-        ept_pte_t *pt = (ept_pte_t *)gr_alloc_page();
+        ept_pte_t *pt = (ept_pte_t *)gr_ept_alloc_page();
         if (!pt)
             return -1;
 

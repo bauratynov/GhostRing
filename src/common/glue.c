@@ -55,8 +55,10 @@ gr_init_cpu(const gr_init_params_t *params)
         }
 
         /* ── Step 3: Capture host state ─────────────────────────────── */
-        gr_sgdt(&vmx_vcpu->host_regs.gdtr);
-        gr_sidt(&vmx_vcpu->host_regs.idtr);
+        /* Cast: gr_special_regs_t embeds a {limit, base} struct with same
+         * binary layout as gr_desc_table_reg_t.  Static-asserted 10 bytes. */
+        gr_sgdt((gr_desc_table_reg_t *)&vmx_vcpu->host_regs.gdtr);
+        gr_sidt((gr_desc_table_reg_t *)&vmx_vcpu->host_regs.idtr);
         vmx_vcpu->host_regs.cr0 = gr_read_cr0();
         vmx_vcpu->host_regs.cr3 = gr_read_cr3();
         vmx_vcpu->host_regs.cr4 = gr_read_cr4();
@@ -89,8 +91,8 @@ gr_init_cpu(const gr_init_params_t *params)
         vmx_vcpu->hv_stack_size = 4 * PAGE_SIZE;
 
         /* ── Step 4: MTRR + EPT ─────────────────────────────────────── */
-        gr_vmx_mtrr_init(vmx_vcpu);
-        gr_vmx_ept_init(vmx_vcpu);
+        gr_vmx_mtrr_init(&vmx_vcpu->ept);
+        gr_vmx_ept_init(&vmx_vcpu->ept);
 
         /* ── Step 5: Enter VMX root + setup VMCS ────────────────────── */
         if (!gr_vmx_enter_root(vmx_vcpu)) {

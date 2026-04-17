@@ -191,7 +191,7 @@ gr_vmx_check_support(void)
     gr_cpuid_local(1, &eax, &ebx, &ecx, &edx);
 
     if (ecx & BIT(31)) {
-        GR_LOG("vmx: another hypervisor already present, aborting\n");
+        GR_LOG_STR("vmx: another hypervisor already present, aborting");
         return false;
     }
 

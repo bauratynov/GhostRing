@@ -32,6 +32,7 @@
 
 #include "cr_guard.h"
 #include "alerts.h"
+#include "../vmx/vmx_defs.h"   /* VMCS_GUEST_CR0, VMCS_CR0_GUEST_HOST_MASK */
 
 /* ── VMCS read/write helpers (local declarations) ──────────────────────── */
 

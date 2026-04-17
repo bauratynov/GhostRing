@@ -24,6 +24,10 @@
   /* Linux kernel module build: kernel defines all standard types */
   #include <linux/types.h>
   #include <linux/stddef.h>
+  #include <linux/bits.h>      /* BIT macro */
+  #include <linux/compiler.h>  /* likely/unlikely */
+  #include <linux/align.h>     /* ALIGN_DOWN */
+  #include <asm/page.h>        /* PAGE_SIZE, PAGE_SHIFT, PAGE_MASK */
   /* bool is _Bool in modern kernels; ensure it's available */
   #ifndef __cplusplus
     #ifndef bool
@@ -82,17 +86,23 @@ typedef uint64_t                virt_addr_t;
 #define PAGE_SHIFT              12
 #define PAGE_SIZE               (1ULL << PAGE_SHIFT)       /* 4 KiB */
 #define PAGE_MASK               (~(PAGE_SIZE - 1))
-#define ALIGN_UP(x, a)          (((x) + ((a) - 1)) & ~((a) - 1))
 #define ALIGN_DOWN(x, a)        ((x) & ~((a) - 1))
 #define BIT(n)                  (1ULL << (n))
+#endif
+
+/* ALIGN_UP is our own macro — not defined by kernel */
+#ifndef ALIGN_UP
+#define ALIGN_UP(x, a)          (((x) + ((a) - 1)) & ~((a) - 1))
 #endif
 
 /* Macros always ours (not in kernel) */
 #define _2MB                    (2ULL * 1024 * 1024)
 #define _1GB                    (1ULL * 1024 * 1024 * 1024)
 
+#ifndef __KERNEL__
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(arr)         (sizeof(arr) / sizeof((arr)[0]))
+#endif
 #endif
 
 /* ── Compiler attributes ─────────────────────────────────────────────── */
