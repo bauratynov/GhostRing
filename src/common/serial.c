@@ -102,29 +102,30 @@ void gr_serial_init(void)
 
 void gr_serial_putc(char c)
 {
-#ifdef __KERNEL__
-    /*
-     * In kernel-module mode route output to dmesg and skip the raw
-     * 0x3F8 write entirely — many hypervisors (Hyper-V Gen 1) don't
-     * emulate COM1, which would hang gr_serial_putc in the LSR poll.
-     */
-    _gr_klog_putc(c);
-    return;
-#else
     uint16_t port = GR_COM1_PORT;
+
+#ifdef __KERNEL__
+    /* Mirror to dmesg line-by-line. */
+    _gr_klog_putc(c);
+#endif
 
     /* Convert bare newlines to CR+LF for terminal compatibility. */
     if (c == '\n') {
         gr_serial_putc('\r');
     }
 
-    /* Spin until the transmit holding register is empty. */
+    /*
+     * Spin until the transmit holding register is empty — bounded so
+     * a missing/unresponsive UART can't hang us (Hyper-V may or may
+     * not emulate COM1 depending on how the port is configured).
+     */
+    uint32_t spins = 0;
     while ((inb(port + UART_LSR) & LSR_THRE) == 0) {
+        if (++spins > 10000) return;    /* give up, drop the byte */
         gr_pause();
     }
 
     outb(port + UART_DATA, (uint8_t)c);
-#endif
 }
 
 /* ── String output ───────────────────────────────────────────────────────── */
