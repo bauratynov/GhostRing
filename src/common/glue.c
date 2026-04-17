@@ -74,6 +74,7 @@ gr_init_cpu(const gr_init_params_t *params)
         vmx_vcpu->host_regs.ldtr = gr_sldt();
         vmx_vcpu->host_regs.gs_base = gr_rdmsr(0xC0000101); /* MSR_GS_BASE */
         vmx_vcpu->host_regs.debug_ctl = gr_rdmsr(0x1D9);    /* MSR_DEBUG_CTL */
+        vmx_vcpu->host_regs.efer      = gr_rdmsr(0xC0000080); /* IA32_EFER */
         vmx_vcpu->host_regs.sysenter_cs = gr_rdmsr(0x174);
         vmx_vcpu->host_regs.sysenter_esp = gr_rdmsr(0x175);
         vmx_vcpu->host_regs.sysenter_eip = gr_rdmsr(0x176);
