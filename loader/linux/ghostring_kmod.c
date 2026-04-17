@@ -9,9 +9,12 @@
 #include <linux/mm.h>
 #include <linux/cpumask.h>
 #include <linux/preempt.h>
+#include <linux/sched.h>     /* current, init_mm */
 #include <asm/cpufeature.h>
 #include <asm/processor.h>
 #include <asm/msr.h>
+#include <asm/io.h>          /* virt_to_phys, phys_to_virt */
+#include <asm/pgtable.h>     /* init_mm.pgd */
 
 #include "ghostring_chardev.h"
 #include "gr_types.h"
@@ -341,14 +344,13 @@ static void __exit ghostring_exit(void)
 	/* 2. Devirtualize all CPUs */
 	on_each_cpu(gr_per_cpu_exit, NULL, 1);
 
-	/* 3. Count and free per-CPU structures */
+	/* 3. Count devirtualized CPUs — actual resource cleanup happens
+	 * in the glue layer (gr_shutdown_cpu → gr_set_vcpu(cpu, NULL)).
+	 * The core allocations are freed via the platform allocator. */
 	for_each_online_cpu(cpu) {
 		if (gr_vcpus[cpu]) {
 			if (gr_vcpus[cpu]->active == 0)
 				count++;
-			gr_pool_free_page(gr_vcpus[cpu]->vmxon_region);
-			gr_pool_free_page(gr_vcpus[cpu]->vmcs);
-			kfree(gr_vcpus[cpu]->host_stack);
 			kfree(gr_vcpus[cpu]);
 		}
 	}
