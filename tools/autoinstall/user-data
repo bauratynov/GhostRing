@@ -1,0 +1,36 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  identity:
+    realname: GhostRing
+    username: ghostring
+    hostname: ghostring-vm
+    # password hash for "ghost" generated via: openssl passwd -6 ghost
+    password: "$6$rounds=4096$GhostRingSalt$Na6Mfp.Dm8u4PG7TBrUIuvfRiwmC9LplY3uN34MQ5QDj5ugC/4ixY5LTcJRwbrc/9fpZi.NurYOrvUsGcQdly0"
+  ssh:
+    install-server: true
+    allow-pw: true
+  packages:
+    - build-essential
+    - linux-headers-generic
+    - make
+    - gcc
+    - git
+    - curl
+    - nodejs
+    - npm
+    - virtualbox-guest-utils
+    - openssh-server
+  late-commands:
+    - curtin in-target --target=/target -- systemctl enable ssh
+    - echo 'ghostring ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ghostring
+    - chmod 440 /target/etc/sudoers.d/ghostring
+  storage:
+    layout:
+      name: direct
+  user-data:
+    disable_root: false
+    timezone: UTC
