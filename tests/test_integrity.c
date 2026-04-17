@@ -6,8 +6,16 @@
  * Compile: gcc -o test_integrity test_integrity.c -msse4.2 && ./test_integrity
  */
 
-#include <string.h>        /* memset */
 #include "test_framework.h"
+
+/* Portable memory-fill helper (bypasses string.h / memset feature-test
+   macros that can bite under strict -std=c99 + -Werror). */
+static void fill_bytes(void *dst, uint8_t val, size_t n)
+{
+    uint8_t *p = (uint8_t *)dst;
+    for (size_t i = 0; i < n; i++)
+        p[i] = val;
+}
 
 /* Software CRC32 for testing — matches the one in integrity.c */
 static uint32_t crc32_table[256];
@@ -54,7 +62,7 @@ TEST(test_crc32_known_value)
 TEST(test_crc32_detects_single_bit_flip)
 {
     uint8_t data[64];
-    memset(data, 0xAA, sizeof(data));
+    fill_bytes(data, 0xAA, sizeof(data));
 
     uint32_t original = gr_crc32(data, sizeof(data));
 
@@ -86,7 +94,7 @@ TEST(test_integrity_region_workflow)
 {
     /* Simulate the full workflow: init baseline, check, detect tamper */
     uint8_t kernel_text[8192];
-    memset(kernel_text, 0xCC, sizeof(kernel_text));  /* INT3 opcode fill */
+    fill_bytes(kernel_text, 0xCC, sizeof(kernel_text));  /* INT3 opcode fill */
 
     /* Baseline */
     uint32_t baseline = gr_crc32(kernel_text, sizeof(kernel_text));
@@ -96,7 +104,7 @@ TEST(test_integrity_region_workflow)
     ASSERT_EQ(check1, baseline);
 
     /* Simulate rootkit: overwrite first 16 bytes of kernel function */
-    memset(kernel_text + 1024, 0x90, 16);  /* NOP sled injection */
+    fill_bytes(kernel_text + 1024, 0x90, 16);  /* NOP sled injection */
 
     /* Check 2: tampered */
     uint32_t check2 = gr_crc32(kernel_text, sizeof(kernel_text));

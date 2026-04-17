@@ -6,7 +6,6 @@
  * Compile: gcc -o test_dkom test_dkom.c && ./test_dkom
  */
 
-#include <string.h>        /* memset */
 #include "test_framework.h"
 
 /* Simple CR3 hash table reimplementation for testing */
@@ -27,7 +26,9 @@ typedef struct {
 
 static void cr3_table_init(cr3_table_t *t)
 {
-    memset(t, 0, sizeof(*t));
+    uint8_t *p = (uint8_t *)t;
+    for (size_t i = 0; i < sizeof(*t); i++)
+        p[i] = 0;
 }
 
 static uint32_t cr3_hash(uint64_t cr3)
