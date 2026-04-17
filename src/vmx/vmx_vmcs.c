@@ -447,23 +447,25 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
                    CPU_BASED_ACTIVATE_MSR_BITMAP |
                    CPU_BASED_ACTIVATE_SECONDARY_CTLS));
 
-    /* VM-exit controls — long-mode host + save/load EFER across exit.
-     * Without SAVE/LOAD the guest EFER field stays stale and LOAD_HOST
-     * avoids the CPU writing host_regs.efer into our actual EFER MSR on
-     * exit.  See SDM Sec 24.7.1 + 26.3.1.1 "IA32_EFER" checks. */
-    gr_vmwrite(VMCS_EXIT_CONTROLS,
-               gr_vmx_adjust_controls(vcpu->vmx_msr[15],
-                                       VM_EXIT_IA32E_MODE |
-                                       VM_EXIT_SAVE_GUEST_EFER |
-                                       VM_EXIT_LOAD_HOST_EFER));
+    /* VM-exit controls — long-mode host + save/load EFER across exit. */
+    uint32_t exit_ctrls =
+        gr_vmx_adjust_controls(vcpu->vmx_msr[15],
+                               VM_EXIT_IA32E_MODE |
+                               VM_EXIT_SAVE_GUEST_EFER |
+                               VM_EXIT_LOAD_HOST_EFER);
+    gr_vmwrite(VMCS_EXIT_CONTROLS, exit_ctrls);
 
-    /* VM-entry controls — long-mode guest + LOAD_GUEST_EFER so that our
-     * VMCS_GUEST_IA32_EFER field (set below) is what becomes the live
-     * EFER on entry.  See SDM Sec 24.8.1. */
-    gr_vmwrite(VMCS_ENTRY_CONTROLS,
-               gr_vmx_adjust_controls(vcpu->vmx_msr[16],
-                                       VM_ENTRY_IA32E_MODE |
-                                       VM_ENTRY_LOAD_GUEST_EFER));
+    /* VM-entry controls — long-mode guest + LOAD_GUEST_EFER. */
+    uint32_t entry_ctrls =
+        gr_vmx_adjust_controls(vcpu->vmx_msr[16],
+                               VM_ENTRY_IA32E_MODE |
+                               VM_ENTRY_LOAD_GUEST_EFER);
+    gr_vmwrite(VMCS_ENTRY_CONTROLS, entry_ctrls);
+
+    GR_LOG("vmx: TRUE_EXIT_CTLS msr=", vcpu->vmx_msr[15]);
+    GR_LOG("vmx: exit_ctrls programmed=", (uint64_t)exit_ctrls);
+    GR_LOG("vmx: TRUE_ENTRY_CTLS msr=", vcpu->vmx_msr[16]);
+    GR_LOG("vmx: entry_ctrls programmed=", (uint64_t)entry_ctrls);
 
     /* No exception bitmap — let all exceptions through to guest */
     gr_vmwrite(VMCS_EXCEPTION_BITMAP, 0);
