@@ -624,4 +624,45 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
      */
     gr_vmwrite(VMCS_HOST_RIP, (uintptr_t)gr_vmx_entry);
     gr_vmwrite(VMCS_HOST_RSP, vcpu->hv_stack + vcpu->hv_stack_size);
+
+    /* ── Dump readback of critical fields for invalid-guest-state diag ── */
+    uint64_t rb;
+#define DUMP(name, field) do {                                  \
+    __asm__ volatile("vmread %[f], %[v]"                        \
+                     : [v] "=r"(rb)                             \
+                     : [f] "r"((uint64_t)(field))               \
+                     : "cc");                                   \
+    GR_LOG("vmcs[" name "]=", rb);                              \
+} while (0)
+
+    DUMP("GUEST_CR0",          VMCS_GUEST_CR0);
+    DUMP("GUEST_CR3",          VMCS_GUEST_CR3);
+    DUMP("GUEST_CR4",          VMCS_GUEST_CR4);
+    DUMP("GUEST_CS_SEL",       VMCS_GUEST_CS_SEL);
+    DUMP("GUEST_CS_AR",        VMCS_GUEST_CS_ACCESS_RIGHTS);
+    DUMP("GUEST_CS_LIMIT",     VMCS_GUEST_CS_LIMIT);
+    DUMP("GUEST_CS_BASE",      VMCS_GUEST_CS_BASE);
+    DUMP("GUEST_SS_AR",        VMCS_GUEST_SS_ACCESS_RIGHTS);
+    DUMP("GUEST_DS_AR",        VMCS_GUEST_DS_ACCESS_RIGHTS);
+    DUMP("GUEST_ES_AR",        VMCS_GUEST_ES_ACCESS_RIGHTS);
+    DUMP("GUEST_FS_AR",        VMCS_GUEST_FS_ACCESS_RIGHTS);
+    DUMP("GUEST_GS_AR",        VMCS_GUEST_GS_ACCESS_RIGHTS);
+    DUMP("GUEST_TR_SEL",       VMCS_GUEST_TR_SEL);
+    DUMP("GUEST_TR_AR",        VMCS_GUEST_TR_ACCESS_RIGHTS);
+    DUMP("GUEST_TR_LIMIT",     VMCS_GUEST_TR_LIMIT);
+    DUMP("GUEST_TR_BASE",      VMCS_GUEST_TR_BASE);
+    DUMP("GUEST_LDTR_AR",      VMCS_GUEST_LDTR_ACCESS_RIGHTS);
+    DUMP("GUEST_GDTR_BASE",    VMCS_GUEST_GDTR_BASE);
+    DUMP("GUEST_GDTR_LIMIT",   VMCS_GUEST_GDTR_LIMIT);
+    DUMP("GUEST_IDTR_BASE",    VMCS_GUEST_IDTR_BASE);
+    DUMP("GUEST_IDTR_LIMIT",   VMCS_GUEST_IDTR_LIMIT);
+    DUMP("GUEST_RIP",          VMCS_GUEST_RIP);
+    DUMP("GUEST_RSP",          VMCS_GUEST_RSP);
+    DUMP("GUEST_RFLAGS",       VMCS_GUEST_RFLAGS);
+    DUMP("GUEST_IA32_EFER",    VMCS_GUEST_IA32_EFER);
+    DUMP("GUEST_DR7",          VMCS_GUEST_DR7);
+    DUMP("GUEST_DEBUGCTL",     VMCS_GUEST_IA32_DEBUGCTL);
+    DUMP("GUEST_ACTIVITY",     VMCS_GUEST_ACTIVITY_STATE);
+    DUMP("LINK_PTR",           VMCS_LINK_POINTER);
+#undef DUMP
 }
