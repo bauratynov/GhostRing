@@ -236,12 +236,15 @@ gr_vmx_ept_protect_page(gr_ept_ctx_t *ctx,
     }
 
     /*
-     * The PDE is now a non-leaf pointer to a 4KB page table.
-     * Read the PFN and locate the PTE.
+     * The PDE is now a non-leaf pointer to a 4KB page table.  Convert
+     * the stored physical frame back to a kernel virtual pointer so
+     * we can dereference the PTE (raw phys addrs are not accessible
+     * in kernel mode — that caused a #PF during early bring-up).
      */
     ept_pde_t *pde_nonleaf = (ept_pde_t *)pde;
-    ept_pte_t *pt = (ept_pte_t *)((uintptr_t)(pde_nonleaf->pfn << PAGE_SHIFT));
-    ept_pte_t *pte = &pt[pte_idx];
+    phys_addr_t pt_phys    = (phys_addr_t)pde_nonleaf->pfn << PAGE_SHIFT;
+    ept_pte_t  *pt         = (ept_pte_t *)gr_phys_to_virt(pt_phys);
+    ept_pte_t  *pte        = &pt[pte_idx];
 
     /* Apply the requested permissions */
     pte->read    = (perms & EPT_PERM_READ)  ? 1 : 0;
