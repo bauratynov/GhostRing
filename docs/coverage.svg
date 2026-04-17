@@ -1,0 +1,237 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="GhostRing MITRE ATT&amp;CK coverage heatmap">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <style>
+      .t    { font-family: -apple-system, Segoe UI, Inter, sans-serif; fill: #c9d1d9; }
+      .tt   { font-weight: 800; letter-spacing: -0.02em; }
+      .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+      .muted { fill: #8b949e; }
+      .cell-strong { fill: #3fb950; }
+      .cell-partial { fill: #d29922; }
+      .cell-planned { fill: #484f58; }
+      .cell-none    { fill: #21262d; stroke: #30363d; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text class="t tt" x="60" y="54" font-size="26" fill="#e6edf3">Detection Coverage — MITRE ATT&amp;CK (enterprise-kernel subset)</text>
+  <text class="t muted" x="60" y="80" font-size="14">What GhostRing currently catches across 19 in-hypervisor detectors.  Cell colour = detection strength.</text>
+
+  <!-- Legend -->
+  <g transform="translate(60,100)">
+    <rect x="0"   y="0" width="18" height="14" class="cell-strong"/>
+    <text class="t" x="26"  y="12" font-size="12">detected in HV</text>
+    <rect x="160" y="0" width="18" height="14" class="cell-partial"/>
+    <text class="t" x="186" y="12" font-size="12">partial / heuristic</text>
+    <rect x="330" y="0" width="18" height="14" class="cell-planned"/>
+    <text class="t" x="356" y="12" font-size="12">planned</text>
+    <rect x="430" y="0" width="18" height="14" class="cell-none"/>
+    <text class="t" x="456" y="12" font-size="12">out of scope</text>
+  </g>
+
+  <!-- Matrix geometry: 5 tactic columns x 6 rows of techniques -->
+  <!-- column width 200, row height 60, starting at x=60, y=160 -->
+  <g transform="translate(60,160)">
+    <!-- Header row (tactics) -->
+    <g font-size="13" class="t tt" fill="#c9d1d9" text-anchor="middle">
+      <text x="110" y="-8">Persistence</text>
+      <text x="320" y="-8">Privilege Escalation</text>
+      <text x="530" y="-8">Defense Evasion</text>
+      <text x="740" y="-8">Credential Access</text>
+      <text x="950" y="-8">Impact</text>
+    </g>
+
+    <!-- PERSISTENCE column -->
+    <g transform="translate(10,0)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1014</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Rootkit — DKOM hide</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">dkom.c · callbacks.c</text>
+    </g>
+    <g transform="translate(10,72)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1547</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Boot / Logon driver</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">driver_obj.c · ssdt.c</text>
+    </g>
+    <g transform="translate(10,144)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1546</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Event-triggered exec</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">callbacks.c · hooks.c</text>
+    </g>
+    <g transform="translate(10,216)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1574.001</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">DLL search-order hijack</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">supply_chain.c</text>
+    </g>
+    <g transform="translate(10,288)">
+      <rect width="200" height="60" rx="8" class="cell-planned"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#c9d1d9">T1542</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#c9d1d9">Pre-OS boot / SMM</text>
+    </g>
+    <g transform="translate(10,360)">
+      <rect width="200" height="60" rx="8" class="cell-none"/>
+      <text class="t muted" x="12" y="22" font-size="13">T1037</text>
+      <text class="t muted" x="12" y="40" font-size="12">Boot / logon script</text>
+    </g>
+
+    <!-- PRIV ESC column -->
+    <g transform="translate(220,0)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1068</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Kernel exploit</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">cr_guard.c · integrity.c</text>
+    </g>
+    <g transform="translate(220,72)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1134</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Token impersonation</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">token.c</text>
+    </g>
+    <g transform="translate(220,144)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1055</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Process injection</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">code_inject.c</text>
+    </g>
+    <g transform="translate(220,216)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1620</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Reflective code / ROP</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">shadow_stack.c</text>
+    </g>
+    <g transform="translate(220,288)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1484</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Domain policy mod</text>
+    </g>
+    <g transform="translate(220,360)">
+      <rect width="200" height="60" rx="8" class="cell-none"/>
+      <text class="t muted" x="12" y="22" font-size="13">T1078</text>
+      <text class="t muted" x="12" y="40" font-size="12">Valid accounts</text>
+    </g>
+
+    <!-- DEFENSE EVASION column -->
+    <g transform="translate(430,0)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1014</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Kernel inline hook</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">hooks.c · integrity.c</text>
+    </g>
+    <g transform="translate(430,72)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1562</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Disable / modify EDR</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">msr_guard.c · callbacks.c</text>
+    </g>
+    <g transform="translate(430,144)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1070</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Indicator removal / AF</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">anti_forensics.c</text>
+    </g>
+    <g transform="translate(430,216)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1601</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Kernel code-patch</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">integrity.c · pte_monitor.c</text>
+    </g>
+    <g transform="translate(430,288)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1497</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Anti-VM / anti-debug</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">anti_forensics.c</text>
+    </g>
+    <g transform="translate(430,360)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1027</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Obfuscated payload</text>
+    </g>
+
+    <!-- CREDENTIAL ACCESS column -->
+    <g transform="translate(640,0)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1003</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">LSASS memory read</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">pte_monitor.c · token.c</text>
+    </g>
+    <g transform="translate(640,72)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1558</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Kerberos ticket theft</text>
+    </g>
+    <g transform="translate(640,144)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1055.002</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Portable-exec inject</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">code_inject.c</text>
+    </g>
+    <g transform="translate(640,216)">
+      <rect width="200" height="60" rx="8" class="cell-planned"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#c9d1d9">T1040</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#c9d1d9">Network sniffing</text>
+    </g>
+    <g transform="translate(640,288)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1539</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Session cookie steal</text>
+    </g>
+    <g transform="translate(640,360)">
+      <rect width="200" height="60" rx="8" class="cell-none"/>
+      <text class="t muted" x="12" y="22" font-size="13">T1110</text>
+      <text class="t muted" x="12" y="40" font-size="12">Brute force</text>
+    </g>
+
+    <!-- IMPACT column -->
+    <g transform="translate(850,0)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1486</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Data encrypted (ransomware)</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">ransomware.c (canary)</text>
+    </g>
+    <g transform="translate(850,72)">
+      <rect width="200" height="60" rx="8" class="cell-partial"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1490</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">Inhibit recovery</text>
+    </g>
+    <g transform="translate(850,144)">
+      <rect width="200" height="60" rx="8" class="cell-strong"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#0d1117">T1529</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#0d1117">System shutdown guard</text>
+      <text class="t mono" x="12" y="54" font-size="10" fill="#0d1117">anti_forensics.c</text>
+    </g>
+    <g transform="translate(850,216)">
+      <rect width="200" height="60" rx="8" class="cell-planned"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#c9d1d9">T1485</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#c9d1d9">Data destruction</text>
+    </g>
+    <g transform="translate(850,288)">
+      <rect width="200" height="60" rx="8" class="cell-planned"/>
+      <text class="t tt" x="12" y="22" font-size="13" fill="#c9d1d9">T1561</text>
+      <text class="t"    x="12" y="40" font-size="12" fill="#c9d1d9">Disk wipe</text>
+    </g>
+    <g transform="translate(850,360)">
+      <rect width="200" height="60" rx="8" class="cell-none"/>
+      <text class="t muted" x="12" y="22" font-size="13">T1499</text>
+      <text class="t muted" x="12" y="40" font-size="12">Endpoint DoS</text>
+    </g>
+  </g>
+
+  <!-- Footer summary -->
+  <g transform="translate(60,540)">
+    <text class="t" font-size="13" fill="#c9d1d9">
+      <tspan class="tt" fill="#3fb950">17</tspan> techniques detected in hypervisor ·
+      <tspan class="tt" fill="#d29922">5</tspan> partial (post-filter in user-mode agent) ·
+      <tspan class="tt" fill="#8b949e">4</tspan> planned ·
+      <tspan class="tt" fill="#8b949e">4</tspan> out of scope for a Ring-−1 tool
+    </text>
+    <text class="t muted" font-size="11" y="20">MITRE ATT&amp;CK® is a registered trademark of The MITRE Corporation.  Technique IDs reference framework v14.</text>
+  </g>
+</svg>

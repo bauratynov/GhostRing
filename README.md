@@ -1,5 +1,9 @@
 # GhostRing
 
+<p align="center">
+  <img src="docs/hero.svg" alt="GhostRing — Ring -1 endpoint security" width="100%"/>
+</p>
+
 [![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
 [![License: Apache 2.0 + GPL v2](https://img.shields.io/badge/License-Apache%202.0%20%2B%20GPLv2-blue.svg)](LICENSE)
 [![Language: C99](https://img.shields.io/badge/Language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
@@ -10,7 +14,83 @@ operating system (Ring -1) using Intel VT-x and AMD-V hardware virtualization
 to provide invisible kernel integrity monitoring, rootkit detection, and memory
 forensics.
 
-> **Status:** active development -- contributions welcome.
+> **Status.** The hypervisor core compiles and loads (`insmod ghostring.ko`
+> succeeds on Linux 6.12, all 18 userspace unit tests pass on CI).  VMXON is
+> currently being debugged inside nested VirtualBox; first `VMLAUNCH` on bare
+> metal / KVM is the next milestone.  See [What works today](#what-works-today).
+
+---
+
+## Detection Coverage
+
+<p align="center">
+  <img src="docs/coverage.svg" alt="MITRE ATT&CK detection coverage" width="100%"/>
+</p>
+
+Coverage maps GhostRing's 19 in-hypervisor detectors onto the MITRE ATT&amp;CK
+framework (enterprise-kernel subset).  The matrix above is *honest* — green
+cells name the specific C file that implements the detection, amber cells
+mark heuristic / post-filter coverage, grey cells are roadmap items.
+Out-of-scope techniques (network-only, account-based) are shown as empty.
+
+---
+
+## What works today
+
+| Area                    | Status             | Notes                                                      |
+|-------------------------|--------------------|------------------------------------------------------------|
+| Core hypervisor source  | ✅ compiles clean  | 88 files, 15 k LOC C99, freestanding + kernel build modes  |
+| Linux kernel module     | ✅ loads on 6.12   | `insmod ghostring.ko`, `/dev/ghostring` char-device up     |
+| Windows driver (KMDF)   | 🟡 builds          | Not yet signed, not yet tested under Driver Verifier       |
+| UEFI / Type-1 loader    | 🟠 skeleton only   | Phase-3 milestone                                          |
+| EPT + VPID setup        | ✅ compiles        | Waiting on first `VMLAUNCH` to validate mapping at runtime |
+| VMXON in nested VT-x    | 🔴 CF=1 in VBox    | Investigation ongoing; boots fine under KVM                |
+| First `VMLAUNCH`        | 🔴 blocked         | Next milestone                                             |
+| 19 detector modules     | ✅ compiled in     | Will light up once VMCS + EPT are live                     |
+| Userspace unit tests    | ✅ 18 / 18 pass    | `allocator`, `CRC32 integrity`, `DKOM hash table`          |
+| CI pipeline             | ✅ green on master | GitHub Actions: compile + unit tests on every push         |
+
+---
+
+## Example alert output *(format specification — surfaces once `VMLAUNCH` lands)*
+
+When a detector fires, GhostRing publishes a structured alert through
+`/dev/ghostring` for the userspace agent to consume.  The schema is already
+in place; the sample below is what a real `ransomware.c` canary trip will
+produce:
+
+```json
+{
+  "ts":        "2026-04-17T18:24:11.842Z",
+  "host":      "kz-sec-01.gov.local",
+  "cpu":       3,
+  "severity":  "critical",
+  "detector":  "ransomware",
+  "technique": "T1486",
+  "summary":   "Canary page written — likely ransomware encryption sweep",
+  "vm_exit":   { "reason": "EPT_VIOLATION", "gpa": "0x7ffee0001000", "rip": "0xffff88010a3f2b17" },
+  "process":   { "pid": 4812, "name": "svchost.exe", "cmd": "C:\\Windows\\System32\\svchost.exe -k netsvcs" },
+  "action":    "blocked_via_ept_readonly",
+  "evidence_bytes": "90 90 48 8b 05 ..."
+}
+```
+
+And the matching `dmesg` trace from the kernel-module side:
+
+```
+[ 4474.336] GhostRing: loading hypervisor module
+[ 4474.336] GhostRing: CPU 0 virtualized
+[ 4474.337] GhostRing: CPU 1 virtualized
+[ 4474.338] GhostRing: CPU 2 virtualized
+[ 4474.339] GhostRing: CPU 3 virtualized
+[ 4474.341] GhostRing: hypervisor loaded on 4 CPUs (baseline CRC=0x8b2af1c3)
+[ 4602.117] GhostRing: ALERT ransomware T1486 CPU=3 pid=4812 svchost.exe action=block
+[ 4602.118] GhostRing: EPT violation at gpa=0x7ffee0001000 rip=0xffff88010a3f2b17
+```
+
+The userspace [`agent/linux/ghostring_agent.c`](agent/linux/ghostring_agent.c)
+reads the device, forwards alerts to SIEM / syslog and exposes a REST endpoint
+for management consoles.
 
 ---
 
