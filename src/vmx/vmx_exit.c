@@ -317,9 +317,23 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
     /* Early-bring-up telemetry. */
     _gr_exit_count++;
     if (_gr_exit_count <= GR_EXIT_LOG_LIMIT) {
+        uint64_t full_reason = gr_vmread(VMCS_EXIT_REASON);
         GR_LOG("vmx_exit: #", _gr_exit_count);
-        GR_LOG("vmx_exit: reason=", (uint64_t)exit_reason);
+        GR_LOG("vmx_exit: reason_full=", full_reason);
+        GR_LOG("vmx_exit: reason_basic=", (uint64_t)exit_reason);
+        GR_LOG("vmx_exit: qualification=", gr_vmread(VMCS_EXIT_QUALIFICATION));
         GR_LOG("vmx_exit: rip=", gr_vmread(VMCS_GUEST_RIP));
+        if (exit_reason == 33 || (full_reason & (1ULL << 31))) {
+            /* VM-entry failure.  Per SDM Vol 3C 26.7, the qualification
+             * encodes which guest state caused the rejection:
+             *   1=CR3 target list
+             *   2=guest MSR loading
+             *   3=address of VMCS/descriptor area
+             *   4=NMI injection
+             * Plus full decode in the manual. */
+            GR_LOG_STR("vmx_exit: INVALID GUEST STATE on VM entry");
+            GR_LOG("vmx_exit: instr_error=", gr_vmread(0x4400));
+        }
     }
     if (_gr_exit_count > GR_EXIT_SAFETY_LIMIT) {
         GR_LOG_STR("vmx_exit: SAFETY LIMIT — emergency VMXOFF");
