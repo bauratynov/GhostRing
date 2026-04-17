@@ -17,17 +17,16 @@
 #define gr_hlt()
 #define gr_panic(msg) do { fprintf(stderr, "PANIC: %s\n", msg); abort(); } while(0)
 
-/* Provide the types that mem.c expects */
-typedef uint64_t phys_addr_t;
-typedef uint64_t virt_addr_t;
-typedef int      bool;
-#define true  1
-#define false 0
-#define PAGE_SIZE       4096
+/* Use types.h — it now auto-detects TEST_USERSPACE and pulls stdint/stdbool */
+#include "types.h"
+
+/* Minimal test-only macros not in types.h */
+#ifndef GR_PACKED
 #define GR_PACKED       __attribute__((packed))
+#endif
+#ifndef GR_ALIGNED
 #define GR_ALIGNED(n)   __attribute__((aligned(n)))
-#define unlikely(x)     (x)
-#define BIT(n)          (1ULL << (n))
+#endif
 
 /* Minimal spinlock stub for single-threaded tests */
 typedef struct { uint32_t ticket; uint32_t serving; } gr_spinlock_t;
