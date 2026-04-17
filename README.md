@@ -1,7 +1,7 @@
 # GhostRing
 
 <p align="center">
-  <img src="docs/hero.svg" alt="GhostRing — Ring -1 endpoint security" width="100%"/>
+  <img src="docs/hero.jpg" alt="GhostRing Architectural Stack — Ring -1 endpoint security" width="100%"/>
 </p>
 
 [![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
