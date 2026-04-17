@@ -1,9 +1,5 @@
 # GhostRing
 
-<p align="center">
-  <img src="docs/hero.jpg" alt="GhostRing Architectural Stack — Ring -1 endpoint security" width="100%"/>
-</p>
-
 [![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
 [![License: Apache 2.0 + GPL v2](https://img.shields.io/badge/License-Apache%202.0%20%2B%20GPLv2-blue.svg)](LICENSE)
 [![Language: C99](https://img.shields.io/badge/Language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
@@ -112,37 +108,9 @@ for management consoles.
 
 ## Architecture
 
-```
- ┌──────────────────────────────────────────────────────┐
- │                    Userspace Agent                    │  Ring 3
- │           (communicates via /dev/ghostring)           │
- └──────────────────┬───────────────────────────────────┘
-                    │  hypercall (VMCALL / VMMCALL)
- ┌──────────────────▼───────────────────────────────────┐
- │                  Linux Kernel (guest)                 │  Ring 0
- │        ghostring.ko  ──  thin shim + loader          │
- └──────────────────┬───────────────────────────────────┘
-                    │  VM-exit / #VMEXIT
- ╔══════════════════▼═══════════════════════════════════╗
- ║               GhostRing Hypervisor                   ║  Ring -1
- ║                                                      ║
- ║   ┌──────────┐  ┌──────────┐  ┌───────────────┐     ║
- ║   │  VMCS /  │  │   EPT /  │  │  Monitoring   │     ║
- ║   │  VMCB    │  │   NPT    │  │    Engine      │     ║
- ║   │ Manager  │  │  Manager │  │               │     ║
- ║   └──────────┘  └──────────┘  └───────────────┘     ║
- ║                                                      ║
- ║   ┌──────────┐  ┌──────────┐  ┌───────────────┐     ║
- ║   │ Hypercall│  │   MSR    │  │  Serial Debug │     ║
- ║   │ Dispatch │  │  Filter  │  │   (COM1)      │     ║
- ║   └──────────┘  └──────────┘  └───────────────┘     ║
- ╚══════════════════════════════════════════════════════╝
-                        │
-              ┌─────────▼─────────┐
-              │   CPU Hardware    │
-              │  VT-x  /  AMD-V  │
-              └───────────────────┘
-```
+<p align="center">
+  <img src="docs/hero.jpg" alt="GhostRing Architectural Stack — Userspace Agent → Kernel → Hypervisor (Ring -1) → CPU Hardware" width="100%"/>
+</p>
 
 ---
 
