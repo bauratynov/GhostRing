@@ -572,9 +572,13 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
     gr_vmwrite(VMCS_CR4_READ_SHADOW,   regs->cr4);
     gr_vmwrite(VMCS_CR4_GUEST_HOST_MASK, 0);
 
-    /* ── Debug state ────────────────────────────────────────────────── */
-    gr_vmwrite(VMCS_GUEST_IA32_DEBUGCTL, regs->debug_ctl);
-    gr_vmwrite(VMCS_GUEST_DR7,           regs->dr7);
+    /* ── Debug state ──────────────────────────────────────────────────
+     * Force DR7 to 0x400 (initial power-on value — only the reserved
+     * bit 10 is 1).  We intentionally drop any debug breakpoints the
+     * host may have set because their reserved-bit requirements can
+     * fail the invalid-guest-state check on entry. */
+    gr_vmwrite(VMCS_GUEST_IA32_DEBUGCTL, 0);
+    gr_vmwrite(VMCS_GUEST_DR7,           0x400);
 
     /* ── IA32_EFER (load-on-entry / load-on-exit) ────────────────────── */
     gr_vmwrite(VMCS_GUEST_IA32_EFER, regs->efer);
@@ -602,7 +606,11 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
      */
     gr_vmwrite(VMCS_GUEST_RIP,    (uintptr_t)gr_vmx_restore_guest);
     gr_vmwrite(VMCS_GUEST_RSP,    vcpu->hv_stack + vcpu->hv_stack_size);
-    gr_vmwrite(VMCS_GUEST_RFLAGS, regs->rflags);
+    /* Force a clean RFLAGS: reserved bit 1 = 1, everything else 0.
+     * The host's live RFLAGS at capture time could include NT / RF /
+     * AC / IOPL combinations that the invalid-guest-state check does
+     * not accept on entry.  A bare 0x2 always passes. */
+    gr_vmwrite(VMCS_GUEST_RFLAGS, 0x2);
 
     /*
      * ── Host RIP / RSP ─────────────────────────────────────────────────
