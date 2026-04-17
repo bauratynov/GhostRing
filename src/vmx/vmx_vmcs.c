@@ -340,10 +340,19 @@ gr_vmx_enter_root(gr_vmx_vcpu_t *vcpu)
      * See SDM Vol. 3C, Section 23.7.
      */
     GR_LOG("vmx: attempting VMXON, region phys=", vcpu->vmxon_phys);
-    GR_LOG("vmx: VMCS revision=", (uint64_t)revision);
-    GR_LOG("vmx: CR4 after VMXE bit=", cr4);
+    GR_LOG("vmx: VMCS revision written=", (uint64_t)revision);
+    GR_LOG("vmx: vmx_basic full=", vmx_basic);
+    GR_LOG("vmx: feature_control MSR=", gr_rdmsr_vmcs(MSR_IA32_FEATURE_CONTROL));
+    GR_LOG("vmx: CR0=", vcpu->host_regs.cr0);
+    GR_LOG("vmx: CR4=", cr4);
+    GR_LOG("vmx: vmxon region[0..7]=",
+           *(volatile uint64_t *)&vcpu->vmxon_region);
     if (gr_vmxon(&vcpu->vmxon_phys)) {
         GR_LOG_STR("vmx: VMXON instruction faulted (CF=1)");
+        /* Possible causes: (a) outer HV refusing VMXON, (b) CR0/CR4 fixed
+         * bits mismatch, (c) VMCS revision mismatch, (d) region alignment,
+         * (e) A20M masking.  With MSR + CR values above a root cause can
+         * be identified from the Intel SDM Vol. 3C Section 30.3. */
         return false;
     }
     GR_LOG_STR("vmx: VMXON succeeded, now in VMX root");
