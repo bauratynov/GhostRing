@@ -297,6 +297,13 @@ handle_vmcall(gr_vmx_guest_ctx_t *ctx)
  * gr_vmx_handle_exit — Main VM-exit dispatcher
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Demo / debug instrumentation: log the first N exits, and if exits
+ * continue beyond a safety threshold, assume something is wrong and
+ * emergency-VMXOFF so the host does not soft-lock. */
+static uint64_t _gr_exit_count;
+#define GR_EXIT_LOG_LIMIT       20
+#define GR_EXIT_SAFETY_LIMIT    10000
+
 void
 gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
 {
@@ -306,6 +313,19 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
      * See SDM Vol. 3C, Section 24.9.1.
      */
     uint32_t exit_reason = (uint32_t)gr_vmread(VMCS_EXIT_REASON) & 0xFFFF;
+
+    /* Early-bring-up telemetry. */
+    _gr_exit_count++;
+    if (_gr_exit_count <= GR_EXIT_LOG_LIMIT) {
+        GR_LOG("vmx_exit: #", _gr_exit_count);
+        GR_LOG("vmx_exit: reason=", (uint64_t)exit_reason);
+        GR_LOG("vmx_exit: rip=", gr_vmread(VMCS_GUEST_RIP));
+    }
+    if (_gr_exit_count > GR_EXIT_SAFETY_LIMIT) {
+        GR_LOG_STR("vmx_exit: SAFETY LIMIT — emergency VMXOFF");
+        for (;;)
+            __asm__ volatile("cli; hlt");
+    }
 
     switch (exit_reason) {
     /*
