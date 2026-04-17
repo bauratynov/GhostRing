@@ -24,6 +24,20 @@ MODULE_AUTHOR("Baurzhan Atynov <bauratynov@gmail.com>");
 MODULE_DESCRIPTION("GhostRing Hypervisor — Linux kernel module loader");
 MODULE_VERSION("0.1.0");
 
+/* Bridge to the core runtime flag defined in src/common/globals.c. */
+extern int g_allow_nested;
+
+/*
+ * allow_nested — when 1, GhostRing will enter VMX root mode even when
+ * CPUID reports another hypervisor is present (i.e. we are running inside
+ * a VirtualBox / KVM / VMware guest with nested VT-x enabled).  Intended
+ * for development and CI; leave at 0 on production systems.
+ */
+static int allow_nested = 0;
+module_param(allow_nested, int, 0644);
+MODULE_PARM_DESC(allow_nested,
+    "Enter VMX root even if an outer hypervisor is detected (default: 0)");
+
 /* ---------------------------------------------------------------------------
  * Constants
  * ------------------------------------------------------------------------- */
@@ -254,6 +268,11 @@ static int __init ghostring_init(void)
 	int cpu, rc;
 
 	pr_info("GhostRing: loading hypervisor module\n");
+
+	/* Propagate module parameter into core runtime flag */
+	g_allow_nested = allow_nested;
+	if (allow_nested)
+		pr_info("GhostRing: allow_nested=1 — will enter VMX root under outer hypervisor\n");
 
 	/* 1. Detect CPU vendor */
 	gr_cpu_vendor = gr_detect_vendor();

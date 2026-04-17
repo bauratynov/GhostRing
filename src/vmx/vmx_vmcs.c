@@ -185,14 +185,22 @@ gr_vmx_check_support(void)
     uint32_t eax, ebx, ecx, edx;
 
     /* Check if another hypervisor is already present.
-     * CPUID.1:ECX bit 31 = hypervisor present.  If set, our VMXON will
-     * fail because the CPU is already in VMX non-root mode.
+     * CPUID.1:ECX bit 31 = hypervisor present.  Normally we refuse to
+     * layer on top of another hypervisor, but when the host exposes
+     * nested VT-x (VirtualBox / KVM / Hyper-V / VMware with nesting)
+     * VMXON from inside the guest is legal and useful for development.
+     * g_allow_nested is a module-parameter-controlled override.
      * See SDM Vol. 2A, Table 3-8 (Feature Information). */
+    extern int g_allow_nested;
     gr_cpuid_local(1, &eax, &ebx, &ecx, &edx);
 
-    if (ecx & BIT(31)) {
-        GR_LOG_STR("vmx: another hypervisor already present, aborting");
+    if ((ecx & BIT(31)) && !g_allow_nested) {
+        GR_LOG_STR("vmx: another hypervisor already present, aborting "
+                   "(set allow_nested=1 to force nested VT-x)");
         return false;
+    }
+    if ((ecx & BIT(31)) && g_allow_nested) {
+        GR_LOG_STR("vmx: outer hypervisor detected, proceeding (nested VT-x)");
     }
 
     /* CPUID.1:ECX.VMX (bit 5) must be set */

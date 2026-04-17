@@ -26,3 +26,13 @@ gr_platform_ops_t g_platform = { 0 };
  * per-CPU virtualisation broadcast.
  */
 gr_percpu_t g_percpu = { .cpu_count = 0 };
+
+/* ── Runtime flags (set by loader / module parameters) ─────────────────── */
+
+/*
+ * g_allow_nested — when non-zero, gr_vmx_check_support() permits
+ * entering VMX root mode even if CPUID reports another hypervisor.
+ * Intended for development inside nested-VT-x guests (VirtualBox, KVM,
+ * VMware).  Leave 0 in production.
+ */
+int g_allow_nested = 0;
