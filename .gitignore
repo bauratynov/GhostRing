@@ -34,7 +34,7 @@ reference/
 
 # Downloaded tools (too large, users download separately)
 tools/VirtualBox-*.exe
-tools/alpine-*.iso
+tools/*.iso
 
 # Test binaries
 tests/test_allocator
