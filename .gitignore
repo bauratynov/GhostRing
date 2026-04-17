@@ -1,0 +1,44 @@
+# Object files
+*.o
+*.obj
+
+# Kernel module artifacts
+*.ko
+*.ko.cmd
+*.mod
+*.mod.c
+*.mod.cmd
+modules.order
+Module.symvers
+.tmp_versions/
+
+# Build artifacts
+*.cmd
+.cache.mk
+
+# Reference repos (cloned for study, not committed)
+reference/
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Debug
+*.dSYM/
+
+# Reference repos (cloned for study, not part of GhostRing)
+reference/
+
+# Downloaded tools (too large, users download separately)
+tools/VirtualBox-*.exe
+tools/alpine-*.iso
+
+# Test binaries
+tests/test_allocator
+tests/test_integrity
+tests/test_dkom
+tests/bench_vmexit
+tests/test_allocator_dbg

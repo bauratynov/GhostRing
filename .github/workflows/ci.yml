@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y gcc make
+
+      - name: Build unit tests
+        run: make -C tests all
+
+      - name: Run unit tests
+        run: make -C tests run
+
+  code-style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for tabs (we use 4-space indent)
+        run: |
+          if grep -rn "	" src/ --include='*.c' --include='*.h' | head -20; then
+            echo "::warning::Found tabs in source files (we use 4-space indent)"
+          fi
+
+      - name: Check license headers
+        run: |
+          missing=0
+          for f in $(find src/ loader/ agent/ -name '*.c' -o -name '*.h'); do
+            if ! head -1 "$f" | grep -q "GhostRing Hypervisor"; then
+              echo "Missing license header: $f"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ $missing -gt 0 ]; then
+            echo "::error::$missing file(s) missing license header"
+            exit 1
+          fi

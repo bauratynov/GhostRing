@@ -1,0 +1,43 @@
+; GhostRing Hypervisor — Driver Installation Manifest
+; Author: Baurzhan Atynov <bauratynov@gmail.com>
+; License: MIT
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = System
+ClassGuid   = {4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider    = %ProviderName%
+DriverVer   = 04/16/2026,0.1.0.0
+CatalogFile = ghostring.cat
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%
+
+[SourceDisksFiles]
+ghostring.sys = 1
+
+[DefaultInstall.NTamd64]
+CopyFiles = GhostRing.CopyFiles
+
+[GhostRing.CopyFiles]
+ghostring.sys
+
+[DefaultInstall.NTamd64.Services]
+AddService = GhostRing,,GhostRing.Service
+
+[GhostRing.Service]
+DisplayName    = %ServiceName%
+Description    = %ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\ghostring.sys
+
+[Strings]
+ProviderName = "GhostRing"
+DiskName     = "GhostRing Hypervisor Driver Disk"
+ServiceName  = "GhostRing"
+ServiceDesc  = "GhostRing Hypervisor Kernel Driver"
