@@ -38,6 +38,16 @@ module_param(allow_nested, int, 0644);
 MODULE_PARM_DESC(allow_nested,
     "Enter VMX root even if an outer hypervisor is detected (default: 0)");
 
+/*
+ * single_cpu — when 1, only bring up VMX on CPU 0 instead of all online
+ * CPUs.  Useful for readable serial debug logs which otherwise interleave
+ * output from N cores.
+ */
+static int single_cpu = 0;
+module_param(single_cpu, int, 0644);
+MODULE_PARM_DESC(single_cpu,
+    "Only virtualise CPU 0 (for readable serial logs; default: 0)");
+
 /* ---------------------------------------------------------------------------
  * Constants
  * ------------------------------------------------------------------------- */
@@ -345,8 +355,13 @@ static int __init ghostring_init(void)
 	gr_params.kernel_text_start = 0;
 	gr_params.kernel_text_size  = 0;
 
-	/* 7. Broadcast VMX init to every online CPU */
-	on_each_cpu(gr_per_cpu_init, NULL, 1);
+	/* 7. Broadcast VMX init (all online CPUs, or just CPU 0 in debug) */
+	if (single_cpu) {
+		pr_info("GhostRing: single_cpu=1 — initialising CPU 0 only\n");
+		smp_call_function_single(0, gr_per_cpu_init, NULL, 1);
+	} else {
+		on_each_cpu(gr_per_cpu_init, NULL, 1);
+	}
 
 	/* 7. Create /dev/ghostring character device */
 	rc = gr_chardev_init();

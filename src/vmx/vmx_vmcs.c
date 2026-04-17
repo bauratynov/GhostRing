@@ -273,17 +273,23 @@ gr_vmx_enter_root(gr_vmx_vcpu_t *vcpu)
      * See SDM Vol. 3C, Section 24.2.
      */
     uint64_t vmcs_size = (vmx_basic & VMX_BASIC_VMCS_SIZE_MASK) >> 32;
-    if (vmcs_size > PAGE_SIZE)
+    if (vmcs_size > PAGE_SIZE) {
+        GR_LOG("vmx: enter_root fail step1 (VMCS size) sz=", vmcs_size);
         return false;
+    }
 
     /* Step 2: VMCS memory type must be write-back. */
     uint64_t vmcs_mem_type = (vmx_basic & VMX_BASIC_MEMORY_TYPE_MASK) >> 50;
-    if (vmcs_mem_type != MTRR_TYPE_WB)
+    if (vmcs_mem_type != MTRR_TYPE_WB) {
+        GR_LOG("vmx: enter_root fail step2 (VMCS memtype!=WB) mt=", vmcs_mem_type);
         return false;
+    }
 
     /* Step 3: True MSR controls must be supported (bit 55). */
-    if (!(vmx_basic & VMX_BASIC_DEFAULT1_ZERO))
+    if (!(vmx_basic & VMX_BASIC_DEFAULT1_ZERO)) {
+        GR_LOG("vmx: enter_root fail step3 (no true-ctls) basic=", vmx_basic);
         return false;
+    }
 
     /*
      * Step 4: Determine EPT + VPID support from IA32_VMX_EPT_VPID_CAP.
@@ -333,24 +339,32 @@ gr_vmx_enter_root(gr_vmx_vcpu_t *vcpu)
      * Step 8: Enter VMX root operation.
      * See SDM Vol. 3C, Section 23.7.
      */
+    GR_LOG("vmx: attempting VMXON, region phys=", vcpu->vmxon_phys);
+    GR_LOG("vmx: VMCS revision=", (uint64_t)revision);
+    GR_LOG("vmx: CR4 after VMXE bit=", cr4);
     if (gr_vmxon(&vcpu->vmxon_phys)) {
+        GR_LOG_STR("vmx: VMXON instruction faulted (CF=1)");
         return false;
     }
+    GR_LOG_STR("vmx: VMXON succeeded, now in VMX root");
 
     /*
      * Step 9: Clear the VMCS (set to "clear" launch state), then load it
      * as the current VMCS on this logical processor.
      */
     if (gr_vmclear(&vcpu->vmcs_phys)) {
+        GR_LOG_STR("vmx: VMCLEAR failed");
         gr_vmxoff();
         return false;
     }
 
     if (gr_vmptrld(&vcpu->vmcs_phys)) {
+        GR_LOG_STR("vmx: VMPTRLD failed");
         gr_vmxoff();
         return false;
     }
 
+    GR_LOG_STR("vmx: enter_root complete (VMXON + VMCLEAR + VMPTRLD OK)");
     return true;
 }
 
