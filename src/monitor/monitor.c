@@ -41,12 +41,18 @@ void gr_monitor_init(gr_monitor_state_t *mon,
     /* DKOM — initialise the CR3 tracking set */
     gr_dkom_init(&mon->cr3_set);
 
-    /* IDT hooks — snapshot and EPT-protect the IDT */
+    /* IDT hooks — snapshot the IDT only.
+     *
+     * NOTE: EPT-write-protecting the IDT (gr_hooks_protect_idt) is
+     * currently disabled.  On Linux x86-64 the IDT is mapped via the
+     * CPU_ENTRY_AREA fixmap, and the simple virt_to_phys() we call to
+     * compute idt_phys yields a bogus physical address for fixmap
+     * memory — which in turn marks the wrong EPT entry RX, producing
+     * an EPT-violation storm on ordinary kernel operation.
+     * Re-enable once we resolve fixmap -> real-phys translation via
+     * pagewalk or kernel page-table lookup. */
     gr_hooks_init(&mon->hooks, ktext_start, ktext_end);
-    if (ept_ctx) {
-        gr_hooks_protect_idt(&mon->hooks, ept_ctx);
-        mon->protected_pages++;  /* At least the IDT page */
-    }
+    (void)ept_ctx;  /* unused until the IDT protect path is reworked */
 
     /* DKOM config starts unconfigured — the loader must supply offsets
      * via hypercall before DKOM scans will produce meaningful results. */
