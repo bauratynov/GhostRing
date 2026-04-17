@@ -6,6 +6,7 @@
  * Compile: gcc -o test_dkom test_dkom.c && ./test_dkom
  */
 
+#include <string.h>        /* memset */
 #include "test_framework.h"
 
 /* Simple CR3 hash table reimplementation for testing */

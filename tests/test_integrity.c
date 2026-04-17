@@ -6,6 +6,7 @@
  * Compile: gcc -o test_integrity test_integrity.c -msse4.2 && ./test_integrity
  */
 
+#include <string.h>        /* memset */
 #include "test_framework.h"
 
 /* Software CRC32 for testing — matches the one in integrity.c */
