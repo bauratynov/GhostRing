@@ -169,8 +169,15 @@ gdt_to_vmx_entry(uint64_t gdt_base, uint16_t selector, vmx_gdt_entry_t *out)
      *   Bit  15    — G (granularity)
      *   Bit  16    — Unusable
      */
+    /*
+     * flags1 → access_rights bits 7:0  (type/S/DPL/P)
+     * flags2 high nibble (bits 7:4 = G/D/L/AVL) → access_rights bits 15:12
+     * Shift is 8, not 4 — putting those bits at 11:8 lands in the
+     * RESERVED-must-be-0 range and strips L=1 for long-mode CS, which
+     * is what was failing VM-entry with 'invalid guest state'.
+     */
     out->access_rights = ((uint32_t)entry->flags1 & 0xFF) |
-                         (((uint32_t)entry->flags2 & 0xF0) << 4);
+                         (((uint32_t)entry->flags2 & 0xF0) << 8);
 
     out->selector = selector;
 }
