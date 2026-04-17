@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * vmx_pt.h — Intel Processor Trace (PT) for control-flow monitoring.
  *

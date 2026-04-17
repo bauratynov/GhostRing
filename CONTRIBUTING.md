@@ -53,4 +53,11 @@ directly instead of opening a public issue.
 ## License
 
 By contributing, you agree that your contributions will be licensed
-under the MIT License.
+under the license that applies to the directory you are modifying:
+
+- **Apache-2.0** for `src/`, `agent/`, `tests/`, `loader/windows/`, `loader/uefi/`
+- **GPL-2.0-only** for `loader/linux/` (required by the Linux kernel)
+
+See the project [LICENSE](LICENSE) index for the full per-subsystem map.
+New files must carry an `SPDX-License-Identifier` header matching their
+subsystem.

@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * shadow_stack.h — Return address protection via hypervisor-managed
  *                  shadow stack (lightweight CFI).

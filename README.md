@@ -1,7 +1,7 @@
 # GhostRing
 
 [![CI](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml/badge.svg)](https://github.com/bauratynov/GhostRing/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Apache 2.0 + GPL v2](https://img.shields.io/badge/License-Apache%202.0%20%2B%20GPLv2-blue.svg)](LICENSE)
 [![Language: C99](https://img.shields.io/badge/Language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
 [![Platform: x86_64](https://img.shields.io/badge/Platform-x86__64-green.svg)](https://en.wikipedia.org/wiki/X86-64)
 
@@ -275,4 +275,21 @@ encoding/decoding. No hardware virtualization required.
 
 ## License
 
-MIT -- see [LICENSE](LICENSE).
+GhostRing is **dual-licensed per subsystem** to balance open-source reach with the
+legal constraints of the platforms we load into:
+
+| Directory                                      | License        | Reason                                        |
+|------------------------------------------------|----------------|-----------------------------------------------|
+| `src/`, `agent/`, `tests/`                     | Apache-2.0     | Hypervisor core + detectors + userspace tools |
+| `loader/windows/`, `loader/uefi/`              | Apache-2.0     | Windows / UEFI loaders (no GPL requirement)   |
+| `loader/linux/`                                | GPL-2.0-only   | Required for Linux kernel module linkage      |
+
+- **Apache 2.0** grants an explicit patent license, which matters for low-level
+  CPU / virtualization code that could otherwise attract patent claims.
+- **GPL v2** is mandated for the Linux kernel module because it links against
+  GPL-only kernel symbols; `MODULE_LICENSE("GPL v2")` is enforced by kbuild.
+
+Every source file carries an `SPDX-License-Identifier` header so the license of
+any snippet is unambiguous. See [`LICENSE`](LICENSE) (index),
+[`LICENSE-APACHE`](LICENSE-APACHE), [`LICENSE-GPL`](LICENSE-GPL), and
+[`NOTICE`](NOTICE) for full terms.

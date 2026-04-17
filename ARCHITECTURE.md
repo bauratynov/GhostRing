@@ -50,19 +50,22 @@ Why:
 - Type-1 (UEFI) added in Phase 3 using MiniVisorPkg as reference
 - Phase 1-2 don't need UEFI
 
-### Open-Source Model: MIT core + commercial enterprise
+### Open-Source Model: Apache 2.0 core + GPL v2 Linux loader + commercial enterprise
 
 ```
-MIT License (open):              Commercial (closed):
-├── src/vmx/     (Intel VT-x)   ├── management console (web UI)
-├── src/svm/     (AMD-V)        ├── Windows WHQL-signed driver
-├── src/ept/     (page tables)  ├── certified builds for gov
-├── src/monitor/ (integrity)    ├── NexusEye integration
-├── src/common/  (shared)       ├── HVMI-style detection rules
-├── loader/kmod/ (Linux)        └── SLA + support
-├── loader/windrv/ (Windows)
-├── docs/
-└── tests/
+Open source (per-subsystem):                 Commercial (closed):
+Apache-2.0:                                  ├── management console (web UI)
+├── src/vmx/     (Intel VT-x)                ├── Windows WHQL-signed driver
+├── src/svm/     (AMD-V)                     ├── certified builds for gov
+├── src/ept/     (page tables)               ├── NexusEye integration
+├── src/monitor/ (integrity)                 ├── HVMI-style detection rules
+├── src/common/  (shared)                    └── SLA + support
+├── loader/windows/ (Windows driver)
+├── loader/uefi/    (UEFI loader)
+├── agent/          (userspace)
+├── docs/, tests/
+GPL-2.0-only:
+└── loader/linux/   (kbuild requires GPL)
 ```
 
 ---
@@ -72,7 +75,7 @@ MIT License (open):              Commercial (closed):
 ```
 GhostRing/
 ├── ARCHITECTURE.md          ← this file
-├── LICENSE                  ← MIT
+├── LICENSE                  ← dual-license index (Apache-2.0 + GPL-2.0)
 ├── README.md
 ├── Makefile
 │

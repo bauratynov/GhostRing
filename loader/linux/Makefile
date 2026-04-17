@@ -1,4 +1,5 @@
-# GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License
+# GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com>
+# SPDX-License-Identifier: GPL-2.0-only
 #
 # Out-of-tree kernel module build for GhostRing hypervisor loader.
 #

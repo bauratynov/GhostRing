@@ -1,0 +1,31 @@
+GhostRing Hypervisor
+Copyright 2026 Baurzhan Atynov
+
+This product includes software developed by Baurzhan Atynov
+(https://github.com/bauratynov/GhostRing).
+
+The src/, agent/, tests/, loader/windows/ and loader/uefi/ trees are
+licensed under the Apache License, Version 2.0 (see LICENSE-APACHE).
+
+The loader/linux/ tree is licensed under the GNU General Public License,
+version 2 (see LICENSE-GPL), for compatibility with the Linux kernel.
+
+─── Third-Party Attribution ───────────────────────────────────────────
+
+Portions of the code were inspired by, but do not copy verbatim from:
+
+  SimpleVisor — Alex Ionescu (https://github.com/ionescu007/SimpleVisor)
+                BSD 3-Clause License
+
+  HyperPlatform — tandasat (https://github.com/tandasat/HyperPlatform)
+                  MIT License
+
+  SimpleSvm — tandasat (https://github.com/tandasat/SimpleSvm)
+              MIT License
+
+  HyperDbg — Sina Karvandi (https://github.com/HyperDbg/HyperDbg)
+             GPL v3 (referenced only for design patterns, no code copied)
+
+Intel Software Developer's Manual and AMD Architecture Programmer's
+Manual are freely available reference works.  Opcode byte sequences and
+VMCS/VMCB field encodings are facts not subject to copyright.

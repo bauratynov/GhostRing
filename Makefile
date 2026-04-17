@@ -1,6 +1,6 @@
 # GhostRing — Hypervisor-based endpoint security
 # Author: Baurzhan Atynov <bauratynov@gmail.com>
-# License: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 KDIR       ?= /lib/modules/$(shell uname -r)/build
 MODULE_DIR  = loader/linux

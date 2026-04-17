@@ -1,3 +1,5 @@
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*++
 
 GhostRing Hypervisor — Windows Kernel Driver Header
@@ -8,7 +10,7 @@ Author:
 
 License:
 
-    MIT
+    Apache-2.0 (SPDX: Apache-2.0)
 
 Module:
 

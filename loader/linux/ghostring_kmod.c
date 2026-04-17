@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: GPL-2.0-only */
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -19,7 +19,7 @@
 #include "ghostring_chardev.h"
 #include "gr_types.h"
 
-MODULE_LICENSE("Dual MIT/GPL");
+MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("Baurzhan Atynov <bauratynov@gmail.com>");
 MODULE_DESCRIPTION("GhostRing Hypervisor — Linux kernel module loader");
 MODULE_VERSION("0.1.0");

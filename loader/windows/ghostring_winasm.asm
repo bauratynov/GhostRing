@@ -6,9 +6,7 @@
 ;
 ;     Baurzhan Atynov <bauratynov@gmail.com>
 ;
-; License:
-;
-;     MIT
+; SPDX-License-Identifier: Apache-2.0
 ;
 ; Module:
 ;

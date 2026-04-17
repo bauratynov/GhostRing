@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * vmx_cache.h — VMCS field caching with dirty-bit tracking.
  *

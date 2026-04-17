@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * cpu.h — Thin inline wrappers around privileged x86-64 instructions.
  * Every helper compiles to exactly the instruction(s) it names — no

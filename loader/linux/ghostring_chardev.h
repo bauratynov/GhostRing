@@ -1,5 +1,5 @@
-/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> — MIT License */
-
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: GPL-2.0-only */
 #ifndef GHOSTRING_CHARDEV_H
 #define GHOSTRING_CHARDEV_H
 

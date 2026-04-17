@@ -1,21 +1,44 @@
-MIT License
+GhostRing Hypervisor — Dual License
 
-Copyright (c) 2026 Baurzhan Atynov
+Copyright (c) 2026 Baurzhan Atynov <bauratynov@gmail.com>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This project is split across three licensing boundaries to match
+industry best practice for hypervisor-based security projects.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+┌─────────────────────┬──────────────┬─────────────────────────────────┐
+│ Directory           │ License      │ Reason                          │
+├─────────────────────┼──────────────┼─────────────────────────────────┤
+│ src/                │ Apache 2.0   │ Hypervisor core + detection     │
+│ agent/              │ Apache 2.0   │ Userspace agents                │
+│ tests/              │ Apache 2.0   │ Unit tests + benchmarks         │
+│ loader/linux/       │ GPL v2       │ Linux kernel module requirement │
+│ loader/windows/     │ Apache 2.0   │ Windows driver (no GPL needed)  │
+│ loader/uefi/        │ Apache 2.0   │ UEFI loader                     │
+└─────────────────────┴──────────────┴─────────────────────────────────┘
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Why this split?
+
+1. Apache 2.0 for the core — provides an explicit patent grant that
+   protects both users and downstream distributors.  For a security
+   project where contributors may hold patents on detection techniques,
+   this grant is essential to avoid post-contribution patent litigation.
+
+2. GPL v2 for the Linux loader — required.  The Linux kernel is
+   licensed under GPL v2 and uses EXPORT_SYMBOL_GPL for many symbols
+   the loader needs.  A non-GPL module triggers kernel taint and is
+   shunned by distribution maintainers.
+
+3. Apache 2.0 for Windows and UEFI — these platforms do not impose
+   GPL requirements on loadable drivers.  Apache 2.0 chosen for
+   consistency with the core and its patent protection.
+
+See:
+  LICENSE-APACHE — Apache License 2.0 (applies to src/, agent/, tests/,
+                   loader/windows/, loader/uefi/)
+  LICENSE-GPL    — GNU General Public License v2 (applies to loader/linux/)
+
+Individual source files contain SPDX-style identifiers in their headers
+indicating which license governs them.
+
+For the avoidance of doubt: files without an explicit license header
+are governed by the Apache 2.0 license.

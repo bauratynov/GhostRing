@@ -1,6 +1,6 @@
 ; GhostRing Hypervisor — Driver Installation Manifest
 ; Author: Baurzhan Atynov <bauratynov@gmail.com>
-; License: MIT
+; SPDX-License-Identifier: Apache-2.0
 
 [Version]
 Signature   = "$WINDOWS NT$"

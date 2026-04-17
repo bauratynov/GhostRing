@@ -1,8 +1,9 @@
+/* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
+/* SPDX-License-Identifier: Apache-2.0 */
 /*
  * GhostRing Hypervisor — Linux User-Mode Agent
  *
  * Author: Baurzhan Atynov <bauratynov@gmail.com>
- * License: MIT
  *
  * Console application that communicates with the GhostRing kernel module
  * via /dev/ghostring.  Supports status queries, integrity checks, DKOM
