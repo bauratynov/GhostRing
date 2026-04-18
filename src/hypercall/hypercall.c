@@ -197,14 +197,16 @@ void gr_hypercall_dispatch(gr_vmx_guest_ctx_t *ctx,
 
     default:
         /* Unknown hypercall — most commonly the guest kernel's Hyper-V
-         * paravirt code hitting its 'hypercall page' under us.  Log
-         * only the first few, then stay quiet to avoid a serial flood. */
+         * paravirt code hitting its 'hypercall page' under us.  We
+         * return *success* (rax = 0) so the caller treats the call
+         * as a no-op rather than propagating failure into timekeeping
+         * / scheduling paths, which previously ended in guest reboot. */
         {
             static uint64_t unknown_count;
             if (unknown_count++ < 5)
                 GR_LOG("hcall: unknown call number=", call_nr);
         }
-        ctx->rax = (uint64_t)GR_HCALL_ERR_UNKNOWN;
+        ctx->rax = 0;
         break;
     }
 }
