@@ -44,8 +44,8 @@ Out-of-scope techniques (network-only, account-based) are shown as empty.
 | EPT + VPID setup        | ✅ compiles        | Waiting on first `VMLAUNCH` to validate mapping at runtime |
 | VMXON in nested VT-x    | ✅ Hyper-V          | Works with `allow_nested=1` after kvm_intel prime (VBox 7.1 incompatible) |
 | First `VMLAUNCH`        | ✅ on Hyper-V       | Guest enters non-root; CPUID/MSR/VMCALL/HLT exits dispatched |
-| Stable blue-pill loop   | ✅ on Hyper-V       | `gr_vmx_launch` writes GUEST_RSP/RIP/RFLAGS inline so the caller returns normally; host stays up &gt;4 min with CPU ~4% |
-| Userspace under HV      | 🟡 unresponsive      | External-interrupt re-injection implemented, but hv_netvsc IRQs still silent under the HV — need proper APIC / pin-based tuning for the demo |
+| Stable blue-pill loop   | ✅ on Hyper-V       | `gr_vmx_launch` writes GUEST_RSP/RIP/RFLAGS inline so the caller returns normally |
+| Userspace under HV      | ✅ fully responsive  | SynIC paravirt passthrough: unknown VMCALLs forwarded to outer Hyper-V, `ping 8.8.8.8` reports 57 ms RTT at 0 % loss **with GhostRing loaded** on CPU 0 |
 | 19 detector modules     | ✅ compiled in     | Will light up once VMCS + EPT are live                     |
 | Userspace unit tests    | ✅ 18 / 18 pass    | `allocator`, `CRC32 integrity`, `DKOM hash table`          |
 | CI pipeline             | ✅ green on master | GitHub Actions: compile + unit tests on every push         |
