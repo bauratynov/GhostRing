@@ -321,6 +321,24 @@ encoding/decoding. No hardware virtualization required.
 
 ---
 
+## Documentation index
+
+| File                              | Audience    | What's inside                                                        |
+|-----------------------------------|-------------|----------------------------------------------------------------------|
+| [docs/DEMO.md](docs/DEMO.md)      | operator    | Copy-paste bring-up: Hyper-V setup, kernel command line, load steps   |
+| [docs/DETECTORS.md](docs/DETECTORS.md) | architect | All 19 detector slots with MITRE ATT&CK technique, method, source file |
+| [docs/BAREMETAL.md](docs/BAREMETAL.md) | operator | Install on a dedicated Intel box — what changes vs Hyper-V nested    |
+| [docs/KGDB.md](docs/KGDB.md)      | kernel dev  | Attach gdb-multiarch to GhostRing via second COM port and named pipe |
+| [docs/FAQ.md](docs/FAQ.md)        | evaluator   | The ten questions every pre-sales call surfaces                      |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | stakeholder | v0.1 → v0.2 → v0.3 → v1.0 milestones with concrete checklists        |
+| [CHANGELOG.md](CHANGELOG.md)      | everyone    | What shipped in v0.1.0 plus every bug we killed during bring-up      |
+| [CONTRIBUTING.md](CONTRIBUTING.md)| contributor | Licensing per subsystem, SPDX rules, commit conventions              |
+| [SECURITY.md](SECURITY.md)        | researcher  | Vulnerability disclosure policy and response timeline                |
+| `docs/live-run.txt`               | skeptic     | SSH transcript of `ping 0 % loss` with GhostRing loaded on CPU 0     |
+| `docs/session-transcript.log`     | skeptic     | Raw COM1 capture of VMXON / VMCS / VMLAUNCH on real hardware         |
+
+---
+
 ## Author
 
 **Baurzhan Atynov** -- [bauratynov@gmail.com](mailto:bauratynov@gmail.com)
