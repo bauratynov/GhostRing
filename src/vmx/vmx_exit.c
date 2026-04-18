@@ -64,6 +64,15 @@ advance_guest_rip(void)
     gr_vmwrite_exit(VMCS_GUEST_RIP, rip + len);
 }
 
+/*
+ * Devirtualisation flag — set from handle_cpuid when the guest issues
+ * the magic CPUID leaf used by gr_shutdown_cpu.  vmx_asm.S reads this
+ * after the C handler returns; if non-zero it executes VMXOFF and
+ * unwinds into the guest's continuation.  Declared early so every
+ * handler in this TU can see it.
+ */
+uint32_t gr_exit_vm_flag = 0;
+
 /* ═══════════════════════════════════════════════════════════════════════════
  * Individual exit handlers
  * ═══════════════════════════════════════════════════════════════════════════ */
@@ -314,14 +323,6 @@ handle_vmcall(gr_vmx_guest_ctx_t *ctx)
  * emergency-VMXOFF so the host does not soft-lock. */
 static uint64_t _gr_exit_count;
 
-/*
- * Global "exit VMX" flag.  The handler sets this when it observes the
- * magic CPUID devirtualisation request; gr_vmx_entry in vmx_asm.S
- * checks this value after the C handler returns and, if non-zero,
- * jumps to a dedicated path that does VMXOFF and restores the guest
- * register state inline.  See gr_shutdown_cpu in glue.c.
- */
-uint32_t gr_exit_vm_flag = 0;
 #define GR_EXIT_LOG_LIMIT       20
 #define GR_EXIT_SAFETY_LIMIT    10000
 
