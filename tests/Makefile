@@ -12,7 +12,7 @@ CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -std=c99 -O2 -g
 CFLAGS  += -I../src/common -DTEST_USERSPACE
 
-TESTS   := test_allocator test_integrity test_dkom test_vmcs_segment
+TESTS   := test_allocator test_integrity test_dkom test_vmcs_segment test_hypercall_ids
 
 .PHONY: all run clean
 
