@@ -454,12 +454,16 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
                    CPU_BASED_ACTIVATE_MSR_BITMAP |
                    CPU_BASED_ACTIVATE_SECONDARY_CTLS));
 
-    /* VM-exit controls — long-mode host + save/load EFER across exit. */
+    /* VM-exit controls — long-mode host + save/load EFER + ack interrupt.
+     * ACK_INTR_ON_EXIT causes the CPU to read the pending external
+     * interrupt vector on exit and stash it in VMCS_EXIT_INTR_INFO, so
+     * our handler can cleanly re-inject it into the guest. */
     uint32_t exit_ctrls =
         gr_vmx_adjust_controls(vcpu->vmx_msr[15],
                                VM_EXIT_IA32E_MODE |
                                VM_EXIT_SAVE_GUEST_EFER |
-                               VM_EXIT_LOAD_HOST_EFER);
+                               VM_EXIT_LOAD_HOST_EFER |
+                               VM_EXIT_ACK_INTR_ON_EXIT);
     gr_vmwrite(VMCS_EXIT_CONTROLS, exit_ctrls);
 
     /* VM-entry controls — long-mode guest + LOAD_GUEST_EFER. */

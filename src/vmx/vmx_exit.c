@@ -389,10 +389,23 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
         break;
 
     case 1: /* EXIT_REASON_EXTERNAL_INTERRUPT */
-        /* An external interrupt arrived while guest was running.
-         * The CPU has already acknowledged it; just resume the guest
-         * and the interrupt is re-taken through host handlers. */
+    {
+        /*
+         * With VM_EXIT_ACK_INTR_ON_EXIT set, the CPU has ACK'd the
+         * interrupt controller and the vector is in VMCS_EXIT_INTR_INFO.
+         * Re-inject it into the guest so its own IDT handler runs.
+         * Without this, network / timer IRQs destined for guest user
+         * space never get delivered and sshd / shells stall.
+         */
+        uint64_t intr_info = gr_vmread(VMCS_EXIT_INTR_INFO);
+        if (intr_info & (1ULL << 31)) {                 /* valid bit */
+            uint32_t vector = (uint32_t)(intr_info & 0xFF);
+            /* Encode as external interrupt injection: type=0, valid=1. */
+            gr_vmwrite_exit(VMCS_ENTRY_INTR_INFO,
+                            (vector) | (0u << 8) | (1u << 31));
+        }
         break;
+    }
 
     case 7: /* EXIT_REASON_PENDING_INTERRUPT (aka INTERRUPT_WINDOW) */
         /* Unblock by clearing the interrupt-window exiting request —
