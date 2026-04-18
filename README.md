@@ -17,6 +17,19 @@ forensics.
 > currently being debugged inside nested VirtualBox; first `VMLAUNCH` on bare
 > metal / KVM is the next milestone.  See [What works today](#what-works-today).
 
+## Quick start (30 seconds)
+
+Fresh Debian 13 / Ubuntu 22.04 VM with Intel VT-x enabled:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/bauratynov/GhostRing/master/tools/quickstart.sh | bash
+```
+
+Checks CPU, installs deps, clones, builds both the kernel module and
+the userspace agent, runs the 18/18 unit tests, and prints the
+`insmod` recipe — **without** loading anything automatically.
+Full walkthrough: [`docs/DEMO.md`](docs/DEMO.md).
+
 ---
 
 ## Detection Coverage
