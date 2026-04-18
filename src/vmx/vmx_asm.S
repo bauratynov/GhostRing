@@ -166,43 +166,73 @@ gr_vmx_entry:
     /*
      * Devirtualisation path.
      *
-     * RSP still points at the saved-GPR block (we did NOT pop it yet).
-     * Read guest RIP / RSP / RFLAGS out of the VMCS, execute VMXOFF,
-     * then restore those three values on the bare hardware so the
-     * originating thread in the guest Linux kernel continues at the
-     * instruction after the magic CPUID with its own stack intact.
-     *
-     * We do not bother restoring GPRs from the saved block — the
-     * guest CPUID handler has already clobbered them for the CPUID
-     * result, which is fine because the caller of gr_cpuid is
-     * discarding the return values.
-     *
-     * CR3 / segment registers remain the host's, which in bluepill
-     * are identical to the guest's kernel-side mappings, so no
-     * transitions are needed there.
+     * The saved guest-GPR block from the VM-exit is at [rsp..+128].
+     * We need to:
+     *   1. Stash guest RIP/RSP/RFLAGS into static memory (because any
+     *      registers we use now will be clobbered when we restore the
+     *      guest GPRs below).
+     *   2. Pop all 16 GPRs — the caller of gr_cpuid needs rdi/rsi/etc
+     *      back at their pre-exit values or it writes the emulated
+     *      CPUID result into garbage memory and crashes the kernel.
+     *   3. VMXOFF.
+     *   4. Switch to the guest's RSP, restore RFLAGS, jump to post-
+     *      CPUID RIP — all via indirect memory reads so the registers
+     *      stay as the guest expects.
      */
     mov     rcx, 0x681E           /* VMCS_GUEST_RIP    */
-    vmread  r8,  rcx
+    vmread  rax, rcx
+    mov     [rip + _gr_devirt_rip], rax
     mov     rcx, 0x681C           /* VMCS_GUEST_RSP    */
-    vmread  r9,  rcx
+    vmread  rax, rcx
+    mov     [rip + _gr_devirt_rsp], rax
     mov     rcx, 0x6820           /* VMCS_GUEST_RFLAGS */
-    vmread  r10, rcx
+    vmread  rax, rcx
+    mov     [rip + _gr_devirt_rflags], rax
 
     /* Clear the flag so a subsequent load + shutdown cycle works. */
     mov     dword ptr [rip + gr_exit_vm_flag], 0
 
-    /* Leave VMX operation — after this instruction the CPU is in
-     * ordinary long mode, identical to before VMXON. */
+    /* Restore all 16 guest GPRs from the saved block on hv_stack.
+     * rax/rcx/rdx were overwritten by the C handler with the CPUID
+     * emulation result, so popping them gives the guest the values
+     * it expected to see. */
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     r11
+    pop     r10
+    pop     r9
+    pop     r8
+    pop     rdi
+    pop     rsi
+    pop     rbp
+    add     rsp, 8                /* skip RSP placeholder */
+    pop     rbx
+    pop     rdx
+    pop     rcx
+    pop     rax
+
+    /* Leave VMX operation. */
     vmxoff
 
-    /* Restore the guest's stack and RFLAGS, then jump back into the
-     * kernel at the instruction following the magic CPUID. */
-    mov     rsp, r9
-    push    r10
+    /* Swap to the guest stack, restore its RFLAGS, jump to post-CPUID. */
+    mov     rsp, [rip + _gr_devirt_rsp]
+    push    qword ptr [rip + _gr_devirt_rflags]
     popfq
-    jmp     r8
+    jmp     qword ptr [rip + _gr_devirt_rip]
 
 .size gr_vmx_entry, . - gr_vmx_entry
+
+/* Static scratch cells used only by the .Lleave_vmx path.  They live in
+ * .bss so the first-use value is zero.  Single-CPU devirtualisation,
+ * so no locking is needed. */
+.section .bss
+.align 8
+_gr_devirt_rip:     .quad 0
+_gr_devirt_rsp:     .quad 0
+_gr_devirt_rflags:  .quad 0
+.text
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
