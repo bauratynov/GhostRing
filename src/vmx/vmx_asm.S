@@ -118,6 +118,16 @@ gr_vmx_entry:
      * CALL pushes 8 bytes → callee sees RSP%16 == 8, correct per ABI. */
     call    gr_vmx_handle_exit
 
+    /*
+     * Post-handler hook: if the handler observed the magic CPUID
+     * devirtualisation request, gr_exit_vm_flag is set.  Bail out of
+     * VMX entirely and return to the caller of gr_shutdown_cpu.  This
+     * is what lets `rmmod ghostring` clean up without hanging CPU 0.
+     */
+    mov     eax, [rip + gr_exit_vm_flag]
+    test    eax, eax
+    jnz     .Lleave_vmx
+
 .Lrestore_gprs:
     /*
      * Restore all GPRs from the (possibly modified) context.
@@ -151,6 +161,46 @@ gr_vmx_entry:
      * This function does not return.
      */
     call    gr_vmx_resume_failed
+
+.Lleave_vmx:
+    /*
+     * Devirtualisation path.
+     *
+     * RSP still points at the saved-GPR block (we did NOT pop it yet).
+     * Read guest RIP / RSP / RFLAGS out of the VMCS, execute VMXOFF,
+     * then restore those three values on the bare hardware so the
+     * originating thread in the guest Linux kernel continues at the
+     * instruction after the magic CPUID with its own stack intact.
+     *
+     * We do not bother restoring GPRs from the saved block — the
+     * guest CPUID handler has already clobbered them for the CPUID
+     * result, which is fine because the caller of gr_cpuid is
+     * discarding the return values.
+     *
+     * CR3 / segment registers remain the host's, which in bluepill
+     * are identical to the guest's kernel-side mappings, so no
+     * transitions are needed there.
+     */
+    mov     rcx, 0x681E           /* VMCS_GUEST_RIP    */
+    vmread  r8,  rcx
+    mov     rcx, 0x681C           /* VMCS_GUEST_RSP    */
+    vmread  r9,  rcx
+    mov     rcx, 0x6820           /* VMCS_GUEST_RFLAGS */
+    vmread  r10, rcx
+
+    /* Clear the flag so a subsequent load + shutdown cycle works. */
+    mov     dword ptr [rip + gr_exit_vm_flag], 0
+
+    /* Leave VMX operation — after this instruction the CPU is in
+     * ordinary long mode, identical to before VMXON. */
+    vmxoff
+
+    /* Restore the guest's stack and RFLAGS, then jump back into the
+     * kernel at the instruction following the magic CPUID. */
+    mov     rsp, r9
+    push    r10
+    popfq
+    jmp     r8
 
 .size gr_vmx_entry, . - gr_vmx_entry
 
