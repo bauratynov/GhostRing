@@ -200,8 +200,18 @@ cmd_monitor(int fd)
             perror("read");
             return 1;
         }
-        if (n < (ssize_t)sizeof(a))
+        if (n == 0) {
+            /* Kernel module unloaded or chardev closed — without
+             * this, the previous `continue` turned EOF into a busy
+             * loop that pegged one core at 100%. */
+            fprintf(stderr, "ghostring-agent: /dev/ghostring EOF, exiting\n");
+            return 0;
+        }
+        if (n != (ssize_t)sizeof(a)) {
+            /* Short read — kernel guarantees record-granular reads
+             * so this should never happen; drop and keep going. */
             continue;
+        }
 
         if (json_mode) {
             char ts[32], host[128];
