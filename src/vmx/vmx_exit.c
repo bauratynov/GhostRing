@@ -376,15 +376,15 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
 
     case 12: /* EXIT_REASON_HLT */
         /*
-         * Guest executed HLT — emulate real halting by running HLT on
-         * the host until an interrupt arrives.  STI+HLT re-enables
-         * interrupts atomically (the 'sti' shadow covers the next
-         * instruction, which is 'hlt').  When the interrupt fires the
-         * host handler runs, then we fall through and resume the guest
-         * at the instruction after HLT.  This prevents the busy spin
-         * that otherwise pegs CPU 0 at 100%.
+         * Guest executed HLT.  Simplest strategy: just advance and
+         * resume.  The guest's HLT intent is ignored (the CPU never
+         * actually halts).  This burns CPU when the guest is idle but
+         * leaves Linux's own ISRs free to run inside the guest, which
+         * is what makes network / timer / sshd actually respond.
+         * Running host-HLT here previously caused Linux ISRs to fire
+         * in VMX root mode on our host stack — subtly wrong and
+         * eventually stopped the network entirely.
          */
-        __asm__ volatile("sti; hlt; cli" ::: "memory");
         advance_guest_rip();
         break;
 
