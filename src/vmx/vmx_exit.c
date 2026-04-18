@@ -305,14 +305,14 @@ handle_wrmsr(gr_vmx_guest_ctx_t *ctx)
 /*
  * VMCALL handler — dispatch to the GhostRing hypercall subsystem.
  * See SDM Vol. 3C, Section 24.1.
- */
-/*
- * VMCALL handler — dispatch to the GhostRing hypercall subsystem.
  *
- * TODO: pass real monitor state and exit_vm flag from vcpu once
- * the glue layer is complete.  For now NULL/dummy to compile.
+ * TODO: thread real monitor state and the exit-VM flag through the
+ * per-vCPU context once the glue layer is complete.  A file-scope
+ * flag is safe in the meantime: UNLOAD is single-CPU by design
+ * (issued once from CPU0) and the flag is consumed only by the
+ * main exit loop on that same CPU immediately after dispatch.
  */
-static bool s_exit_vm = false;  /* per-CPU exit flag (temporary) */
+static bool s_exit_vm = false;
 
 static void
 handle_vmcall(gr_vmx_guest_ctx_t *ctx)
