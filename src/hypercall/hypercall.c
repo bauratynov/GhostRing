@@ -196,17 +196,41 @@ void gr_hypercall_dispatch(gr_vmx_guest_ctx_t *ctx,
         break;
 
     default:
-        /* Unknown hypercall — most commonly the guest kernel's Hyper-V
-         * paravirt code hitting its 'hypercall page' under us.  We
-         * return *success* (rax = 0) so the caller treats the call
-         * as a no-op rather than propagating failure into timekeeping
-         * / scheduling paths, which previously ended in guest reboot. */
+        /*
+         * Unknown hypercall — most commonly Hyper-V paravirt calls
+         * made by the guest kernel (SynIC messaging, timer, VP index).
+         *
+         * Forward them to the OUTER hypervisor by executing VMCALL
+         * ourselves while in VMX root: nested VT-x delivers it straight
+         * to Hyper-V, which services the call, and we pass the result
+         * back to the guest.  Without this step the guest's SynIC
+         * never sees interrupt signalling and network / timer services
+         * wedge even though the kernel stays up.
+         *
+         * Hyper-V hypercall calling convention (TLFS 1.0):
+         *   Inputs : RCX = call code + flags, RDX = input GPA,
+         *            R8  = output GPA (often 0)
+         *   Output : RAX = hypercall status (low 16 bits)
+         */
         {
             static uint64_t unknown_count;
             if (unknown_count++ < 5)
-                GR_LOG("hcall: unknown call number=", call_nr);
+                GR_LOG("hcall: forwarding unknown call to outer HV, nr=",
+                       call_nr);
+
+            register uint64_t in_rcx __asm__("rcx") = ctx->rcx;
+            register uint64_t in_rdx __asm__("rdx") = ctx->rdx;
+            register uint64_t in_r8  __asm__("r8")  = ctx->r8;
+            uint64_t out_rax;
+
+            __asm__ volatile(
+                "vmcall"
+                : "=a"(out_rax)
+                : "r"(in_rcx), "r"(in_rdx), "r"(in_r8)
+                : "memory"
+            );
+            ctx->rax = out_rax;
         }
-        ctx->rax = 0;
         break;
     }
 }
