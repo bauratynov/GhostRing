@@ -6,11 +6,20 @@
 [![License: Apache 2.0 + GPL v2](https://img.shields.io/badge/License-Apache%202.0%20%2B%20GPLv2-blue.svg)](LICENSE)
 [![Language: C99](https://img.shields.io/badge/Language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
 [![Platform: x86_64](https://img.shields.io/badge/Platform-x86__64-green.svg)](https://en.wikipedia.org/wiki/X86-64)
+[![Tests](https://img.shields.io/badge/Tests-46%20passing-brightgreen.svg)](tests/)
 
 Lightweight open-source hypervisor for endpoint security. Runs beneath the
 operating system (Ring -1) using Intel VT-x and AMD-V hardware virtualization
 to provide invisible kernel integrity monitoring, rootkit detection, and memory
 forensics.
+
+> **Why now.** Bitdefender's `HVMI`, the only production-grade opensource
+> Linux/Xen/KVM introspection EDR, was **archived January 2026**.
+> SimpleVisor hasn't seen a code commit since 2018.  HyperPlatform is
+> slow-maintained and Windows-only.  HyperDbg is alive but is a debugger
+> (GPL-3.0).  GhostRing fills the empty slot: an actively developed,
+> Linux-first blue-pill EDR with 19 MITRE-mapped detectors under a
+> permissive Apache-2.0 core plus GPL-v2 Linux loader.
 
 > **Status.** The hypervisor core compiles and loads (`insmod ghostring.ko`
 > succeeds on Linux 6.12, all 18 userspace unit tests pass on CI).  VMXON is

@@ -33,11 +33,15 @@ static bool gr_has_sse42(void)
     return cached != 0;
 }
 
-/* ── Software CRC32 table (IEEE 802.3 polynomial) ──────────────────────── */
+/* ── Software CRC32C table (Castagnoli polynomial) ─────────────────────── */
 
 /*
- * Pre-computed table for the standard CRC32 polynomial 0xEDB88320
- * (bit-reversed 0x04C11DB7).  Generated once at first use.
+ * Pre-computed table for the CRC32C (Castagnoli) polynomial 0x82F63B78
+ * (bit-reversed 0x1EDC6F41).  This is the polynomial used by the
+ * SSE 4.2 `crc32` instruction and by the Linux kernel's crc32c helper,
+ * so the software fallback here and the hardware path produce the same
+ * value for the same input.  IEEE 802.3 CRC32 (0xEDB88320) would NOT
+ * match either hardware instruction — do not switch polynomials.
  */
 static uint32_t crc32_table[256];
 static bool     crc32_table_ready = false;

@@ -4,6 +4,61 @@ Private / working notes from periodic literature and competitor
 review.  Used to steer engineering priorities.  Each block tagged
 with the date it was added.
 
+## 2026-04-18 — cycle 2 — competitor landscape
+
+### Single most important finding
+
+**Bitdefender HVMI (github.com/bitdefender/hvmi) was archived on
+2026-01-26** — marked "no longer maintained".  That was the only
+production-grade opensource Linux/Xen/KVM introspection EDR.  Its
+archival leaves a vacuum GhostRing can plausibly fill.
+
+### State of the art around us
+
+| Project          | Status          | License           | Platform         | Detection pack? |
+|------------------|-----------------|-------------------|------------------|-----------------|
+| SimpleVisor      | Frozen 2018-12  | **No LICENSE**    | Windows x64 + UEFI | No            |
+| HyperPlatform    | Slow (2023-11)  | MIT               | Windows          | No (platform)  |
+| HyperDbg         | **Active**      | GPL-3.0 (viral)   | Windows          | No (debugger)  |
+| DdiMon / MemoryMon / GuardMon | ≤2022 (dead) | MIT | Windows        | Some (3 proto) |
+| BitVisor 3.0     | Active 2024-08  | BSD-2             | Type-1 bare      | I/O-level only |
+| Nitro / KVM-VMI  | 2025-10 (alive) | MIT-ish           | KVM guest        | Forensics      |
+| **HVMI**         | **Archived 2026-01** | Apache-2.0   | Xen / KVM / Napoca | Yes         |
+| **GhostRing**    | v0.1 (us)       | Apache-2 + GPL-2  | Linux / Windows  | **19 + MITRE** |
+
+### GhostRing's differentiators (position clearly)
+
+- **Only active Linux-first blue-pill EDR in 2026.**  Every Windows
+  alternative is dead or debugger-not-EDR.
+- **Dual Apache-2.0 + GPL-v2** — permissive core with GPL Linux
+  loader; HyperPlatform's MIT loses patent grant, HyperDbg's GPL-3
+  scares enterprise legal.
+- **19 MITRE-mapped detectors** shipped.  DdiMon/MemoryMon/GuardMon
+  combined shipped three experimental prototypes and stopped.
+- **Verified Hyper-V nested bring-up** with responsive guest.
+  HyperPlatform still has open issues on newer Windows builds.
+
+### Gaps we still have vs competitors
+
+- HyperDbg has richer debugger surface (`!epthook2`, scripting).
+  Not an EDR gap — we are not a debugger.
+- BitVisor has AArch64.  We are x86_64 only.
+- HVMI had **deep Windows introspection** (signed struct DB,
+  exception handling for kernel exploits).  For Windows-side parity
+  we need the equivalent PDB-driven struct resolution.  Track in
+  v0.3 roadmap.
+
+### Actionable follow-ups
+
+- [ ] Cite HVMI archival in `README.md` "Why now?" section.
+- [ ] Add `HyperPlatform → GhostRing migration notes` doc — likely
+      a common question from existing HyperPlatform users now that
+      it's slow-maintained.
+- [ ] Ping Alex Ionescu's SimpleVisor repo with an offer to clarify
+      its LICENSE status — either he answers and we link, or we
+      state clearly that SimpleVisor is unlicensed (practical
+      blocker for downstream reuse we can highlight).
+
 ## 2026-04-18 — cycle 1
 
 ### Hardening in exit path (actionable — matches what we already ship)

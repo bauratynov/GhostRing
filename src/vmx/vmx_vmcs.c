@@ -433,14 +433,31 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
      */
 
     /* Secondary processor-based controls — enable RDTSCP, INVPCID,
-     * XSAVES, and EPT/VPID if supported.  See SDM Sec 24.6.2. */
-    gr_vmwrite(VMCS_SECONDARY_EXEC_CTRL,
-               gr_vmx_adjust_controls(
-                   vcpu->vmx_msr[11],
-                   SECONDARY_EXEC_ENABLE_RDTSCP  |
-                   SECONDARY_EXEC_ENABLE_INVPCID |
-                   SECONDARY_EXEC_XSAVES         |
-                   vcpu->ept_controls));
+     * XSAVES, and EPT/VPID if supported.  See SDM Sec 24.6.2.
+     *
+     * Under nested Hyper-V certain bits are advertised in the
+     * capability MSR but silently refuse to take effect on VMWRITE.
+     * We read back and log if the effective value differs so we
+     * don't ship broken features without noticing. */
+    uint32_t desired_sec = gr_vmx_adjust_controls(
+        vcpu->vmx_msr[11],
+        SECONDARY_EXEC_ENABLE_RDTSCP  |
+        SECONDARY_EXEC_ENABLE_INVPCID |
+        SECONDARY_EXEC_XSAVES         |
+        vcpu->ept_controls);
+    gr_vmwrite(VMCS_SECONDARY_EXEC_CTRL, desired_sec);
+    {
+        uint64_t rb = 0;
+        __asm__ volatile("vmread %[f], %[v]"
+                         : [v] "=r"(rb)
+                         : [f] "r"((uint64_t)VMCS_SECONDARY_EXEC_CTRL)
+                         : "cc");
+        if ((uint32_t)rb != desired_sec) {
+            GR_LOG("vmx: SECONDARY_EXEC wrote != readback, desired=",
+                   (uint64_t)desired_sec);
+            GR_LOG("vmx: SECONDARY_EXEC readback=", rb);
+        }
+    }
 
     /* Pin-based controls — no additional bits requested. */
     gr_vmwrite(VMCS_PIN_BASED_EXEC_CTRL,
