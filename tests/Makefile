@@ -12,7 +12,7 @@ CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -std=c99 -O2 -g
 CFLAGS  += -I../src/common -DTEST_USERSPACE
 
-TESTS   := test_allocator test_integrity test_dkom
+TESTS   := test_allocator test_integrity test_dkom test_vmcs_segment
 
 .PHONY: all run clean
 
@@ -43,6 +43,9 @@ test_integrity: test_integrity.c
 	$(CC) $(CFLAGS) -msse4.2 -o $@ $<
 
 test_dkom: test_dkom.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+test_vmcs_segment: test_vmcs_segment.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
