@@ -43,8 +43,9 @@ Out-of-scope techniques (network-only, account-based) are shown as empty.
 | UEFI / Type-1 loader    | 🟠 skeleton only   | Phase-3 milestone                                          |
 | EPT + VPID setup        | ✅ compiles        | Waiting on first `VMLAUNCH` to validate mapping at runtime |
 | VMXON in nested VT-x    | ✅ Hyper-V          | Works with `allow_nested=1` after kvm_intel prime (VBox 7.1 incompatible) |
-| First `VMLAUNCH`        | ✅ on Hyper-V       | Guest enters non-root; CPUID/MSR/VMCALL exits dispatched   |
-| Stable blue-pill loop   | 🟡 in progress      | `gr_vmx_launch` still uses stub guest RIP; needs proper continuation |
+| First `VMLAUNCH`        | ✅ on Hyper-V       | Guest enters non-root; CPUID/MSR/VMCALL/HLT exits dispatched |
+| Stable blue-pill loop   | ✅ on Hyper-V       | `gr_vmx_launch` writes GUEST_RSP/RIP/RFLAGS inline so the caller returns normally; host stays up &gt;4 min with CPU ~4% |
+| Userspace under HV      | 🟡 sshd unresponsive | Host HLT delivers IRQs, but proper interrupt injection into the guest is still missing — kernel keeps running, userspace scheduling stalls |
 | 19 detector modules     | ✅ compiled in     | Will light up once VMCS + EPT are live                     |
 | Userspace unit tests    | ✅ 18 / 18 pass    | `allocator`, `CRC32 integrity`, `DKOM hash table`          |
 | CI pipeline             | ✅ green on master | GitHub Actions: compile + unit tests on every push         |
