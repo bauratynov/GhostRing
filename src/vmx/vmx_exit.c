@@ -98,7 +98,10 @@ handle_cpuid(gr_vmx_guest_ctx_t *ctx)
      */
     if (leaf == 0x47520001) {
         gr_exit_vm_flag = 1;
-        GR_LOG_STR("vmx_exit: magic CPUID — leaving VMX root");
+        GR_LOG("vmx_exit: magic CPUID hit, leaf=", (uint64_t)leaf);
+        GR_LOG("vmx_exit: guest RIP at CPUID=", gr_vmread(VMCS_GUEST_RIP));
+        GR_LOG("vmx_exit: guest RSP at CPUID=", gr_vmread(VMCS_GUEST_RSP));
+        GR_LOG_STR("vmx_exit: flag set — asm will VMXOFF");
         (void)subleaf;
     }
 
