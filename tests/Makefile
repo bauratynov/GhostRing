@@ -12,7 +12,7 @@ CC      := gcc
 CFLAGS  := -Wall -Wextra -Werror -std=c99 -O2 -g
 CFLAGS  += -I../src/common -DTEST_USERSPACE
 
-TESTS   := test_allocator test_integrity test_dkom test_vmcs_segment test_hypercall_ids test_alert_ring test_msr_bitmap test_ept_indices test_crc32c_polynomial test_platform_abi test_vmcs_encodings test_allocator_stress test_rflags test_mtrr_types test_exit_reasons test_selector_encoding test_dkom_generation test_adjust_controls
+TESTS   := test_allocator test_integrity test_dkom test_vmcs_segment test_hypercall_ids test_alert_ring test_msr_bitmap test_ept_indices test_crc32c_polynomial test_platform_abi test_vmcs_encodings test_allocator_stress test_rflags test_mtrr_types test_exit_reasons test_selector_encoding test_dkom_generation test_adjust_controls test_alert_wire_format test_ept_encoding test_cr_fixed_bits test_vm_entry_intr_info
 
 .PHONY: all run clean
 
