@@ -375,9 +375,16 @@ gr_vmx_handle_exit(gr_vmx_guest_ctx_t *ctx)
         break;
 
     case 12: /* EXIT_REASON_HLT */
-        /* Guest asked to halt.  For a blue-pill we don't want to stop
-         * the logical CPU, so just skip the HLT and resume — the guest
-         * sees as if an interrupt arrived immediately. */
+        /*
+         * Guest executed HLT — emulate real halting by running HLT on
+         * the host until an interrupt arrives.  STI+HLT re-enables
+         * interrupts atomically (the 'sti' shadow covers the next
+         * instruction, which is 'hlt').  When the interrupt fires the
+         * host handler runs, then we fall through and resume the guest
+         * at the instruction after HLT.  This prevents the busy spin
+         * that otherwise pegs CPU 0 at 100%.
+         */
+        __asm__ volatile("sti; hlt; cli" ::: "memory");
         advance_guest_rip();
         break;
 
