@@ -7,6 +7,20 @@ research previews where the public API may shift between tags.
 
 ## [Unreleased]
 
+### Fixed
+
+- `agent/linux/ghostring_agent.c` — `--monitor` handled the
+  kernel-module-unload EOF on `/dev/ghostring` as a short read and
+  spun a CPU at 100 % until SIGINT; now prints a single line and
+  exits cleanly.
+- `tests/test_alert_wire_format.c` — the first version of this
+  test asserted the in-kernel 48-byte `gr_alert_t` from
+  `src/monitor/alerts.h`, which is not the record that crosses
+  `/dev/ghostring`.  The agent and the chardev actually use a
+  24-byte layout `{ts_ns, cpu_id, alert_type, info}`; that is now
+  what the test locks.  The discrepancy is also documented under
+  *Open questions* in `docs/RESEARCH-NOTES.md` as a v0.2 decision.
+
 ### Added
 
 - Regression-lock test suite expanded to cover the invariants
@@ -44,6 +58,14 @@ research previews where the public API may shift between tags.
 - Bare-metal bring-up transcript to complement `docs/live-run.txt`.
 
 ## [0.1.0] — 2026-04-18 — Research Preview
+
+The v0.1.0 tag is the first public release.  The codebase that
+ships with it is the result of several months of private R&D on a
+Hyper-V nested-VT-x rig — many iterations on VMCS setup, EPT
+construction, and the monitor-side detector scaffolding never made
+it out of the local tree.  The history below summarises what the
+public repo inherits from that work; individual internal commits
+are not recoverable from this release.
 
 ### Added
 
