@@ -330,6 +330,7 @@ encoding/decoding. No hardware virtualization required.
 | [docs/BAREMETAL.md](docs/BAREMETAL.md) | operator | Install on a dedicated Intel box — what changes vs Hyper-V nested    |
 | [docs/KGDB.md](docs/KGDB.md)      | kernel dev  | Attach gdb-multiarch to GhostRing via second COM port and named pipe |
 | [docs/SIEM-integration.md](docs/SIEM-integration.md) | SOC engineer | Turnkey Splunk HEC / Filebeat / Kafka configs for alert ingestion |
+| [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) | architect  | Adversary tiers, trust boundaries, detection reliability table        |
 | [docs/FAQ.md](docs/FAQ.md)        | evaluator   | The ten questions every pre-sales call surfaces                      |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | stakeholder | v0.1 → v0.2 → v0.3 → v1.0 milestones with concrete checklists        |
 | [CHANGELOG.md](CHANGELOG.md)      | everyone    | What shipped in v0.1.0 plus every bug we killed during bring-up      |
