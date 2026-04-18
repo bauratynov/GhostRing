@@ -1,0 +1,34 @@
+=== GhostRing v0.1.0 Live-Run Proof Transcript ===
+Sat Apr 18 12:26:39 AM EDT 2026
+
+--- Guest kernel ---
+Linux ghostring 6.12.74+deb13+1-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.74-2 (2026-03-08) x86_64 GNU/Linux
+
+--- GhostRing module loaded ---
+ghostring             110592  0
+libcrc32c              12288  1 ghostring
+
+--- dmesg (GhostRing events) ---
+[  182.862423] GhostRing: loading hypervisor module
+[  182.862425] GhostRing: allow_nested=1 — will enter VMX root under outer hypervisor
+[  182.862428] GhostRing: detected Intel CPU
+[  182.862547] GhostRing: single_cpu=1 — initialising CPU 0 only
+[  182.863791] GhostRing/serial: [GR] glue: init CPU 0x0
+[  182.863940] GhostRing/serial: 0
+[  182.866945] GhostRing/serial: [GR] vmx: outer hypervisor detected, proceeding (nested VT-x)
+[  182.871538] GhostRing/serial: [GR] vmx: CR4 before adjust=0x3706f0
+[  182.873315] GhostRing/serial: [GR] vmx: CR0_FIXED0 msr=0x80000021
+[  182.875109] GhostRing/serial: [GR] vmx: CR0_FIXED1 msr=0xffffffff
+
+--- ping test: userspace I/O UNDER the GhostRing hypervisor ---
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=110 time=55.2 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=110 time=55.1 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=110 time=55.2 ms
+
+--- 8.8.8.8 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 55.133/55.178/55.202/0.032 ms
+
+--- total VM-exits observed so far ---
+100

@@ -1,0 +1,30 @@
+[   53.344276] GhostRing: loading hypervisor module
+[   53.344279] GhostRing: allow_nested=1 — will enter VMX root under outer hypervisor
+[   53.344281] GhostRing: detected Intel CPU
+[   53.344396] GhostRing: single_cpu=1 — initialising CPU 0 only
+[   53.345585] GhostRing/serial: [GR] glue: init CPU 0x0
+[   53.345731] GhostRing/serial: 0
+[   53.348712] GhostRing/serial: [GR] vmx: outer hypervisor detected, proceeding (nested VT-x)
+[   53.353356] GhostRing/serial: [GR] vmx: CR4 before adjust=0x3706f0
+[   53.355106] GhostRing/serial: [GR] vmx: CR0_FIXED0 msr=0x80000021
+[   53.356235] GhostRing/serial: [GR] vmx: CR0_FIXED1 msr=0xffffffff
+[   53.356799] GhostRing/serial: [GR] vmx: CR4_FIXED0 msr=0x2000
+[   53.357402] GhostRing/serial: [GR] vmx: CR4_FIXED1 msr=0x3727ff
+[   53.357953] GhostRing/serial: [GR] vmx: CR4 written=0x3726f0
+[   53.358518] GhostRing/serial: [GR] vmx: CR4 readback=0x3726f0
+[   53.359417] GhostRing/serial: [GR] vmx: attempting VMXON, region phys=0x32800000
+[   53.360051] GhostRing/serial: [GR] vmx: VMCS revision written=0x1
+[   53.360792] GhostRing/serial: [GR] vmx: vmx_basic full=0x98100000000001
+[   53.361393] GhostRing/serial: [GR] vmx: feature_control MSR=0x5
+[   53.361834] GhostRing/serial: [GR] vmx: CR0=0x80050033
+[   53.362239] GhostRing/serial: [GR] vmx: CR4=0x3726f0
+[   53.362821] GhostRing/serial: [GR] vmx: vmxon region[0..7]=0x1
+[   53.363585] GhostRing/serial: [GR] vmx: VMXON succeeded, now in VMX root
+[   53.364676] GhostRing/serial: [GR] vmx: enter_root complete (VMXON + VMCLEAR + VMPTRLD OK)
+[   53.365495] GhostRing/serial: [GR] vmx: TRUE_EXIT_CTLS msr=0x3fefff00036ffb
+[   53.366224] GhostRing/serial: [GR] vmx: exit_ctrls programmed=0x33effb
+[   53.367026] GhostRing/serial: [GR] vmx: TRUE_ENTRY_CTLS msr=0xd3ff000011fb
+[   53.367722] GhostRing/serial: [GR] vmx: entry_ctrls programmed=0x93fb
+[   53.368293] GhostRing/serial: [GR] vmcs[GUEST_CR0]=0x80050033
+[   53.368880] GhostRing/serial: [GR] vmcs[GUEST_CR3]=0x1024a4004
+[   53.369414] GhostRing/serial: [GR] vmcs[GUEST_CR4]=0x3726f0

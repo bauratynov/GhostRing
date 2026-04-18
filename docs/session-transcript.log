@@ -1,0 +1,182 @@
+[GR] glue: init CPU 0x0
+0
+[GR] vmx: outer hypervisor detected, proceeding (nested VT-x)
+[GR] vmx: CR4 before adjust=0x3706f0
+[GR] vmx: CR0_FIXED0 msr=0x80000021
+[GR] vmx: CR0_FIXED1 msr=0xffffffff
+[GR] vmx: CR4_FIXED0 msr=0x2000
+[GR] vmx: CR4_FIXED1 msr=0x3727ff
+[GR] vmx: CR4 written=0x3726f0
+[GR] vmx: CR4 readback=0x3726f0
+[GR] vmx: attempting VMXON, region phys=0x4400000
+[GR] vmx: VMCS revision written=0x1
+[GR] vmx: vmx_basic full=0x98100000000001
+[GR] vmx: feature_control MSR=0x5
+[GR] vmx: CR0=0x80050033
+[GR] vmx: CR4=0x3726f0
+[GR] vmx: vmxon region[0..7]=0x1
+[GR] vmx: VMXON succeeded, now in VMX root
+[GR] vmx: enter_root complete (VMXON + VMCLEAR + VMPTRLD OK)
+[GR] vmx: TRUE_EXIT_CTLS msr=0x3fefff00036ffb
+[GR] vmx: exit_ctrls programmed=0x33effb
+[GR] vmx: TRUE_ENTRY_CTLS msr=0xd3ff000011fb
+[GR] vmx: entry_ctrls programmed=0x93fb
+[GR] vmcs[GUEST_CR0]=0x80050033
+[GR] vmcs[GUEST_CR3]=0x102702005
+[GR] vmcs[GUEST_CR4]=0x3726f0
+[GR] vmcs[GUEST_CS_SEL]=0x10
+[GR] vmcs[GUEST_CS_AR]=0xa09b
+[GR] vmcs[GUEST_CS_LIMIT]=0xfffff
+[GR] vmcs[GUEST_CS_BASE]=0x0
+[GR] vmcs[GUEST_SS_AR]=0xc093
+[GR] vmcs[GUEST_DS_AR]=0x10000
+[GR] vmcs[GUEST_ES_AR]=0x10000
+[GR] vmcs[GUEST_FS_AR]=0x10000
+[GR] vmcs[GUEST_GS_AR]=0x10000
+[GR] vmcs[GUEST_TR_SEL]=0x40
+[GR] vmcs[GUEST_TR_AR]=0x8b
+[GR] vmcs[GUEST_TR_LIMIT]=0x4087
+[GR] vmcs[GUEST_TR_BASE]=0xfffffe6a3c474000
+[GR] vmcs[GUEST_LDTR_AR]=0x10000
+[GR] vmcs[GUEST_GDTR_BASE]=0xfffffe6a3c472000
+[GR] vmcs[GUEST_GDTR_LIMIT]=0x7f
+[GR] vmcs[GUEST_IDTR_BASE]=0xfffffe0000000000
+[GR] vmcs[GUEST_IDTR_LIMIT]=0xfff
+[GR] vmcs[GUEST_RIP]=0xffffffffc0ea9419
+[GR] vmcs[GUEST_RSP]=0xffff8aaa020a4000
+[GR] vmcs[GUEST_RFLAGS]=0x2
+[GR] vmcs[GUEST_IA32_EFER]=0xd01
+[GR] vmcs[GUEST_DR7]=0x400
+[GR] vmcs[GUEST_DEBUGCTL]=0x0
+[GR] vmcs[GUEST_ACTIVITY]=0x0
+[GR] vmcs[LINK_PTR]=0xffffffffffffffff
+[GR] monitor: initialising security subsystems
+[GR] msr_guard: shadow LSTAR=0xffffffff8ec00080
+[GR] msr_guard: shadow SYSENTER_EIP=0xffffffff8ec02030
+[GR] msr_guard: shadow SYSENTER_ESP=0xfffffe6a3c474000
+[GR] msr_guard: shadow EFER=0xd01
+[GR] msr_guard: MSR bitmap configured, interception active
+[GR] dkom: CR3 set initialised
+[GR] hooks: IDT base GVA=0xfffffe0000000000
+[GR] hooks: IDT limit=0xfff
+[GR] hooks: IDT snapshot taken, entries=0x100
+[GR] drvobj: monitoring subsystem initialised
+[GR] code_inject: monitor initialised, all pages non-executable
+[GR] code_inject: bitmap size=0x20000
+[GR] shadow_stack: manager initialised
+[GR] shadow_stack: WARNING — MTF single-step is expensive, enable only for high-value processes
+[GR] cr_guard: shadow CR0=0x80050033
+[GR] cr_guard: shadow CR4=0x3726f0
+[GR] cr_guard: CR0 mask=0x80010000
+[GR] cr_guard: CR4 mask=0xb00000
+[GR] cr_guard: armed — CR0.WP, CR0.PG, CR4.SMEP, CR4.SMAP, CR4.CET protected
+[GR] monitor: all subsystems armed (Phase 5 detectors active)
+[GR] glue: launching VMX on CPU 0x0
+0...
+[GR] glue: CPU virtualised 0x0
+0 virtualised OK
+[GR] vmx_exit: #0x1
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] hcall: forwarding unknown call to outer HV, nr=0xffffcadac0012000
+[GR] vmx_exit: #0x2
+[GR] vmx_exit: reason_full=0x20
+[GR] vmx_exit: reason_basic=0x20
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8de992b8
+[GR] vmx_exit: #0x3
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] hcall: forwarding unknown call to outer HV, nr=0xffffcadac0012000
+[GR] vmx_exit: #0x4
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] hcall: forwarding unknown call to outer HV, nr=0xffffcadac0012000
+[GR] vmx_exit: #0x5
+[GR] vmx_exit: reason_full=0x20
+[GR] vmx_exit: reason_basic=0x20
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8de992b8
+[GR] vmx_exit: #0x6
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] hcall: forwarding unknown call to outer HV, nr=0xffffcadac0012000
+[GR] vmx_exit: #0x7
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] hcall: forwarding unknown call to outer HV, nr=0xffffcadac0012000
+[GR] vmx_exit: #0x8
+[GR] vmx_exit: reason_full=0x20
+[GR] vmx_exit: reason_basic=0x20
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8de992b8
+[GR] vmx_exit: #0x9
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0xa
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0xb
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0xc
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0xd
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0xe
+[GR] vmx_exit: reason_full=0x20
+[GR] vmx_exit: reason_basic=0x20
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8de992b8
+[GR] vmx_exit: #0xf
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0x10
+[GR] vmx_exit: reason_full=0xc
+[GR] vmx_exit: reason_basic=0xc
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8eaf827e
+[GR] vmx_exit: #0x11
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0x12
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0x13
+[GR] vmx_exit: reason_full=0x12
+[GR] vmx_exit: reason_basic=0x12
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffcadac0012000
+[GR] vmx_exit: #0x14
+[GR] vmx_exit: reason_full=0x20
+[GR] vmx_exit: reason_basic=0x20
+[GR] vmx_exit: qualification=0x0
+[GR] vmx_exit: rip=0xffffffff8de992b8
