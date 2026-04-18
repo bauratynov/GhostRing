@@ -117,6 +117,20 @@ setup:
   Intel consumer boards is "VMX locked but outside-SMX enabled"?
   Need to document for every OEM model we encounter.
 
+- **Alert ABI mismatch discovered 2026-04-18.**  In-kernel
+  `gr_alert_t` (src/monitor/alerts.h) has seven fields including
+  `guest_rip`, `guest_cr3`, `target_gpa`.  The chardev wire
+  record (loader/linux/ghostring_chardev.c) is only
+  `{ts_ns, cpu_id, alert_type, info}`, and `gr_alert_emit()`'s
+  `rip/cr3/gpa` arguments currently only go to `GR_LOG` (dmesg).
+  Userspace agents therefore see "integrity failure on CPU 3"
+  but not *which* page was hit.  Decide before v0.2 whether to:
+    a) widen the wire record to match the monitor struct (ABI
+       break — agent needs recompile), or
+    b) strip the unused rip/cr3/gpa parameters from `gr_alert_emit`
+       and be honest about what userspace receives.
+  Option (a) is more useful for SIEM correlation.
+
 ## Sources reviewed
 
 - GhostRing tree: `src/vmx/vmx_harden.h`, `vmx_hlat.h`, `vmx_pt.h`,
