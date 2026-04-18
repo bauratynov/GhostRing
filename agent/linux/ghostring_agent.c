@@ -12,6 +12,9 @@
  * Usage: ghostring-agent [--status|--integrity|--dkom|--monitor]
  */
 
+/* Expose POSIX extensions (gmtime_r, localtime_r) under -std=c99. */
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
