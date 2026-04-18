@@ -92,15 +92,14 @@ handle_cpuid(gr_vmx_guest_ctx_t *ctx)
     gr_cpuid_exit(leaf, subleaf, &eax, &ebx, &ecx, &edx);
 
     /*
-     * Magic CPUID leaf — the devirtualisation request.  Set the
-     * gr_exit_vm_flag; the asm post-processing will VMXOFF and return
-     * control to the caller of gr_shutdown_cpu.  We still echo the
-     * normal CPUID behaviour back to the guest so the instruction
-     * doesn't observe weird state before we unwind.
+     * Magic CPUID leaf — the devirtualisation request.  Leaf alone is
+     * the trigger (we ignore subleaf so both the glue.c and loader-
+     * side callers work without having to agree on a subleaf value).
      */
-    if (leaf == 0x47520001 && subleaf == 0x47520001) {
+    if (leaf == 0x47520001) {
         gr_exit_vm_flag = 1;
         GR_LOG_STR("vmx_exit: magic CPUID — leaving VMX root");
+        (void)subleaf;
     }
 
     switch (leaf) {
