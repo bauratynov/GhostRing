@@ -53,25 +53,25 @@ hostname_short(char *out, size_t n)
 }
 
 /* ---------------------------------------------------------------------------
- * IOCTL codes — must match ghostring_chardev.h in the kernel module
+ * IOCTL codes — must match loader/linux/ghostring_chardev.c
  * ------------------------------------------------------------------------- */
 
 #define GR_IOC_MAGIC            'G'
-#define GR_IOC_STATUS           _IOR(GR_IOC_MAGIC, 0, struct gr_status_info)
-#define GR_IOC_INTEGRITY_CHECK  _IO(GR_IOC_MAGIC, 1)
-#define GR_IOC_DKOM_SCAN        _IO(GR_IOC_MAGIC, 2)
+#define GR_IOC_STATUS           _IOR(GR_IOC_MAGIC, 1, int)
+#define GR_IOC_CPU_COUNT        _IOR(GR_IOC_MAGIC, 2, int)
+#define GR_IOC_INTEGRITY_CHECK  _IO(GR_IOC_MAGIC, 3)
 
 #define GR_DEVICE_PATH          "/dev/ghostring"
 
 /* ---------------------------------------------------------------------------
- * Status structure — must match kernel module
+ * Alert structure — must match gr_alert_t in the kernel module
  * ------------------------------------------------------------------------- */
 
-struct gr_status_info {
-    unsigned int active_cpu_count;
-    unsigned int total_cpu_count;
-    unsigned int cpu_vendor;      /* 1 = Intel, 2 = AMD */
-    unsigned int loaded;
+struct gr_alert_wire {
+    unsigned long long ts_ns;
+    unsigned int       cpu_id;
+    unsigned int       alert_type;
+    unsigned long long info;
 };
 
 /* ---------------------------------------------------------------------------
@@ -110,10 +110,14 @@ open_ghostring(void)
 static int
 cmd_status(int fd)
 {
-    struct gr_status_info info;
+    int loaded = 0, cpus = 0;
 
-    if (ioctl(fd, GR_IOC_STATUS, &info) < 0) {
+    if (ioctl(fd, GR_IOC_STATUS, &loaded) < 0) {
         perror("ioctl GR_IOC_STATUS");
+        return 1;
+    }
+    if (ioctl(fd, GR_IOC_CPU_COUNT, &cpus) < 0) {
+        perror("ioctl GR_IOC_CPU_COUNT");
         return 1;
     }
 
@@ -121,23 +125,14 @@ cmd_status(int fd)
         char ts[32], host[128];
         iso8601_now(ts, sizeof(ts));
         hostname_short(host, sizeof(host));
-        const char *vendor = (info.cpu_vendor == 1) ? "intel"
-                          : (info.cpu_vendor == 2) ? "amd"
-                          : "unknown";
         printf("{\"ts\":\"%s\",\"host\":\"%s\",\"event\":\"status\","
-               "\"loaded\":%s,\"active_cpus\":%u,\"total_cpus\":%u,"
-               "\"cpu_vendor\":\"%s\"}\n",
-               ts, host, info.loaded ? "true" : "false",
-               info.active_cpu_count, info.total_cpu_count, vendor);
+               "\"loaded\":%s,\"online_cpus\":%d}\n",
+               ts, host, loaded ? "true" : "false", cpus);
     } else {
         print_timestamp();
         printf("GhostRing Status\n");
-        printf("  Loaded     : %s\n", info.loaded ? "YES" : "NO");
-        printf("  Active CPUs: %u / %u\n", info.active_cpu_count,
-               info.total_cpu_count);
-        printf("  CPU Vendor : %s\n",
-               (info.cpu_vendor == 1) ? "Intel" :
-               (info.cpu_vendor == 2) ? "AMD" : "Unknown");
+        printf("  Loaded      : %s\n", loaded ? "YES" : "NO");
+        printf("  Online CPUs : %d\n", cpus);
     }
 
     return 0;
@@ -161,67 +156,68 @@ cmd_integrity(int fd)
 }
 
 /* ---------------------------------------------------------------------------
- * --dkom : trigger DKOM scan
+ * --monitor : continuous alert consumption via read()
+ *
+ * The kernel pushes struct gr_alert_wire records into a ring buffer;
+ * read() returns one record per call (24 bytes) or blocks.
  * ------------------------------------------------------------------------- */
 
-static int
-cmd_dkom(int fd)
+static const char *
+alert_type_name(unsigned int t)
 {
-    if (ioctl(fd, GR_IOC_DKOM_SCAN) < 0) {
-        perror("ioctl GR_IOC_DKOM_SCAN");
-        return 1;
+    switch (t) {
+    case 0:  return "unknown";
+    case 1:  return "msr_write";
+    case 2:  return "ept_write_violation";
+    case 3:  return "idt_hook";
+    case 4:  return "ssdt_hook";
+    case 5:  return "cr_write";
+    case 6:  return "ransomware_canary";
+    case 7:  return "rop_violation";
+    case 8:  return "code_inject";
+    case 9:  return "integrity_crc_mismatch";
+    case 10: return "dkom_hidden_cr3";
+    default: return "other";
     }
-
-    print_timestamp();
-    printf("DKOM scan requested successfully.\n");
-    return 0;
 }
-
-/* ---------------------------------------------------------------------------
- * --monitor : continuous alert polling via read()
- * ------------------------------------------------------------------------- */
 
 static int
 cmd_monitor(int fd)
 {
-    char    buf[512];
+    struct gr_alert_wire a;
     ssize_t n;
 
-    print_timestamp();
-    printf("Monitoring GhostRing alerts (Ctrl+C to stop)...\n");
+    if (!json_mode) {
+        print_timestamp();
+        printf("Monitoring GhostRing alerts (Ctrl+C to stop)...\n");
+    }
 
     for (;;) {
-        n = read(fd, buf, sizeof(buf) - 1);
+        n = read(fd, &a, sizeof(a));
         if (n < 0) {
             if (errno == EAGAIN || errno == EINTR)
                 continue;
             perror("read");
             return 1;
         }
+        if (n < (ssize_t)sizeof(a))
+            continue;
 
-        if (n > 0) {
-            buf[n] = '\0';
-            /* Strip trailing newline if any — SIEM JSON expects one per line. */
-            char *nl = strchr(buf, '\n');
-            if (nl) *nl = '\0';
-
-            if (json_mode) {
-                char ts[32], host[128];
-                iso8601_now(ts, sizeof(ts));
-                hostname_short(host, sizeof(host));
-                /* Minimal JSON-escape of the payload (just quotes + backslash). */
-                printf("{\"ts\":\"%s\",\"host\":\"%s\",\"event\":\"alert\","
-                       "\"raw\":\"", ts, host);
-                for (char *p = buf; *p; p++) {
-                    if (*p == '"' || *p == '\\') putchar('\\');
-                    if (*p >= 0x20) putchar(*p);
-                }
-                printf("\"}\n");
-                fflush(stdout);
-            } else {
-                print_timestamp();
-                printf("Alert: %s\n", buf);
-            }
+        if (json_mode) {
+            char ts[32], host[128];
+            iso8601_now(ts, sizeof(ts));
+            hostname_short(host, sizeof(host));
+            printf("{\"ts\":\"%s\",\"host\":\"%s\",\"event\":\"alert\","
+                   "\"cpu\":%u,\"type\":\"%s\",\"type_id\":%u,"
+                   "\"info\":\"0x%llx\",\"kernel_ts_ns\":%llu}\n",
+                   ts, host, a.cpu_id, alert_type_name(a.alert_type),
+                   a.alert_type, a.info, a.ts_ns);
+            fflush(stdout);
+        } else {
+            print_timestamp();
+            printf("Alert: cpu=%u type=%s (%u) info=0x%llx kts=%llu\n",
+                   a.cpu_id, alert_type_name(a.alert_type), a.alert_type,
+                   a.info, a.ts_ns);
         }
     }
 
@@ -236,12 +232,11 @@ static void
 print_usage(const char *argv0)
 {
     printf("GhostRing Agent — Linux\n");
-    printf("Usage: %s [--json] [--status|--integrity|--dkom|--monitor]\n\n",
+    printf("Usage: %s [--json] [--status|--integrity|--monitor]\n\n",
            argv0);
     printf("  --status      Query hypervisor status\n");
     printf("  --integrity   Trigger EPT integrity check\n");
-    printf("  --dkom        Trigger DKOM scan\n");
-    printf("  --monitor     Poll for alerts (blocking read)\n");
+    printf("  --monitor     Consume alert ring buffer (blocking read)\n");
     printf("  --json        Emit structured JSON (for SIEM / syslog)\n");
 }
 
@@ -280,8 +275,6 @@ main(int argc, char *argv[])
         rc = cmd_status(fd);
     else if (strcmp(action, "--integrity") == 0)
         rc = cmd_integrity(fd);
-    else if (strcmp(action, "--dkom") == 0)
-        rc = cmd_dkom(fd);
     else if (strcmp(action, "--monitor") == 0)
         rc = cmd_monitor(fd);
     else {
