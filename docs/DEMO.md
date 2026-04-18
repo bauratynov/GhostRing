@@ -104,10 +104,14 @@ logs every exit that matters.
   yet chain external interrupts back into the guest with the same
   fidelity Hyper-V expects.  The kernel itself is alive — uptime
   reaches 18 minutes+ under the hypervisor with CPU usage around 4%.
-- **Clean `rmmod`** is not implemented: the shutdown path uses a
-  magic CPUID leaf to request VMXOFF, but the exit handler does not
-  yet execute the real VMXOFF + guest-state restore.  Power-cycle the
-  VM for now.
+- **Clean `rmmod` is NYI.** Trying `rmmod ghostring` panics the guest
+  kernel.  The devirtualisation path (magic-CPUID → VMXOFF → jump
+  back into kernel) has a subtle register/stack invariant we couldn't
+  isolate without `kgdb` attached.  The plumbing is in place —
+  `gr_vmx_entry` has a `.Lleave_vmx` branch — but the trigger is
+  currently disabled.  **Workflow: insmod → use → power-cycle VM to
+  reload.**  Will be re-enabled in v0.2.0 once a real kernel debugger
+  is wired up.
 - **VirtualBox 7.1.8** refuses our VMXON despite advertising nested
   VT-x — Hyper-V is the only tested outer hypervisor.
 
