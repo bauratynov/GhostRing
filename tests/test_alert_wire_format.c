@@ -1,39 +1,45 @@
 /* GhostRing Hypervisor — Author: Baurzhan Atynov <bauratynov@gmail.com> */
 /* SPDX-License-Identifier: Apache-2.0 */
 /*
- * test_alert_wire_format.c — ABI lock for gr_alert_t.
+ * test_alert_wire_format.c — ABI lock for the record that crosses
+ * the kernel↔userspace boundary on /dev/ghostring.
  *
- * gr_alert_t is a shared-ABI structure: the hypervisor writes it
- * (src/monitor/alerts.h), the kernel chardev hands raw bytes to
- * userspace via read(/dev/ghostring), and the agent parses those
- * bytes back into its own mirror struct.  Any of the following break
- * the agent silently:
+ * There are TWO gr_alert_t structures in the tree and they are
+ * deliberately different:
  *
- *   - Field reorder      → agent reads garbage for every field after the swap
- *   - Field size change  → all subsequent alerts shift by N bytes
- *   - Padding change     → compilers on different archs disagree
- *   - Enum renumber      → alert_type dispatch routes wrong alerts
+ *   loader/linux/ghostring_chardev.c  → 24-byte record (the wire)
+ *   src/monitor/alerts.h              → 48-byte record (in-kernel,
+ *                                        never leaves kernel space)
  *
- * This file locks the on-the-wire layout.  If you *need* to change
- * it, bump a version field and the agent in lockstep.
+ * This test locks the 24-byte wire layout only — that is what the
+ * agent binary (agent/linux/ghostring_agent.c) reads via read().
+ * Any drift between chardev and agent manifests as garbage alerts
+ * with nonsense cpu_id / type values.
+ *
+ * Wire layout (chardev + agent agree):
+ *
+ *   offset 0  : u64  ts_ns         — ktime_get_ns() at detection
+ *   offset 8  : u32  cpu_id
+ *   offset 12 : u32  alert_type    — one of enum gr_alert_type
+ *   offset 16 : u64  info          — type-specific payload
+ *   total     : 24 bytes
  */
 
 #include <stddef.h>
 #include "test_framework.h"
 
-/* Mirror of gr_alert_t from src/monitor/alerts.h.  Intentionally a
- * copy — we are testing the wire format, not the header include. */
+/* Mirror of the wire record — must match gr_alert_t in
+ * loader/linux/ghostring_chardev.c and struct gr_alert_wire in
+ * agent/linux/ghostring_agent.c. */
 typedef struct {
-    uint64_t timestamp;
+    uint64_t ts_ns;
     uint32_t cpu_id;
     uint32_t alert_type;
-    uint64_t guest_rip;
-    uint64_t guest_cr3;
-    uint64_t target_gpa;
     uint64_t info;
 } wire_alert_t;
 
-/* Mirror of enum gr_alert_type. */
+/* Alert type values — same enum as src/monitor/alerts.h but
+ * repeated here so the test fails loudly on renumber. */
 enum {
     W_EPT_WRITE_VIOLATION = 0,
     W_MSR_TAMPER          = 1,
@@ -57,48 +63,46 @@ enum {
     W_TYPE_COUNT          = 19,
 };
 
-TEST(test_alert_total_size_is_48_bytes)
+TEST(test_wire_record_is_24_bytes)
 {
-    /* The agent's read() loop assumes sizeof(alert_t) == 48.
-     * A padding change would shift every subsequent record. */
-    ASSERT_EQ(sizeof(wire_alert_t), 48);
+    /* Agent's read() loop advances the file pointer by
+     * sizeof(gr_alert_wire) bytes per record.  Padding drift here
+     * shifts every subsequent alert. */
+    ASSERT_EQ(sizeof(wire_alert_t), 24);
 }
 
 TEST(test_field_offsets_frozen)
 {
-    /* Exact byte positions — the agent reads at these offsets. */
-    ASSERT_EQ(offsetof(wire_alert_t, timestamp),   0);
-    ASSERT_EQ(offsetof(wire_alert_t, cpu_id),      8);
+    ASSERT_EQ(offsetof(wire_alert_t, ts_ns),      0);
+    ASSERT_EQ(offsetof(wire_alert_t, cpu_id),     8);
     ASSERT_EQ(offsetof(wire_alert_t, alert_type), 12);
-    ASSERT_EQ(offsetof(wire_alert_t, guest_rip),  16);
-    ASSERT_EQ(offsetof(wire_alert_t, guest_cr3),  24);
-    ASSERT_EQ(offsetof(wire_alert_t, target_gpa), 32);
-    ASSERT_EQ(offsetof(wire_alert_t, info),       40);
+    ASSERT_EQ(offsetof(wire_alert_t, info),      16);
 }
 
 TEST(test_field_sizes_frozen)
 {
     wire_alert_t a;
-    ASSERT_EQ(sizeof(a.timestamp),  8);
+    ASSERT_EQ(sizeof(a.ts_ns),      8);
     ASSERT_EQ(sizeof(a.cpu_id),     4);
     ASSERT_EQ(sizeof(a.alert_type), 4);
-    ASSERT_EQ(sizeof(a.guest_rip),  8);
-    ASSERT_EQ(sizeof(a.guest_cr3),  8);
-    ASSERT_EQ(sizeof(a.target_gpa), 8);
     ASSERT_EQ(sizeof(a.info),       8);
 }
 
-TEST(test_fits_in_one_cache_line)
+TEST(test_no_padding_on_x86_64)
 {
-    /* alerts.h has a GR_STATIC_ASSERT that sizeof(gr_alert_t) <=
-     * CACHELINE_SIZE (64).  Mirror that here so CI fails before
-     * the header assert fires. */
-    ASSERT(sizeof(wire_alert_t) <= 64);
+    /* Sum of field sizes must equal struct size — no implicit
+     * padding.  If this fails on a new arch, the chardev needs a
+     * packed attribute or a serialization layer. */
+    size_t sum = sizeof(uint64_t)       /* ts_ns */
+               + sizeof(uint32_t) * 2   /* cpu_id + alert_type */
+               + sizeof(uint64_t);      /* info */
+    ASSERT_EQ(sum, sizeof(wire_alert_t));
 }
 
-TEST(test_alert_type_enum_values_locked)
+TEST(test_alert_type_values_locked)
 {
-    /* Agent's switch-case depends on these exact numeric values. */
+    /* Agent's switch-case and SIEM JSON field "type" depend on
+     * these exact numbers. */
     ASSERT_EQ(W_EPT_WRITE_VIOLATION, 0);
     ASSERT_EQ(W_MSR_TAMPER,          1);
     ASSERT_EQ(W_CR_TAMPER,           2);
@@ -118,40 +122,17 @@ TEST(test_alert_type_enum_values_locked)
     ASSERT_EQ(W_MEM_WIPE,           16);
     ASSERT_EQ(W_DLL_HIJACK,         17);
     ASSERT_EQ(W_BINARY_TAMPER,      18);
-}
-
-TEST(test_alert_type_count_matches_last_plus_one)
-{
-    /* Bounds check in the agent uses TYPE_COUNT as an upper limit.
-     * If we add a new alert but forget to bump TYPE_COUNT, the new
-     * alert is silently rejected as out-of-range. */
-    ASSERT_EQ(W_TYPE_COUNT, W_BINARY_TAMPER + 1);
-    ASSERT_EQ(W_TYPE_COUNT, 19);
-}
-
-TEST(test_struct_has_no_unexpected_padding)
-{
-    /* Sum of field sizes must equal struct size — no tail or inter-
-     * field padding on x86_64.  If this breaks on a new arch, a
-     * serialization layer is needed instead of raw memcpy. */
-    size_t sum = sizeof(uint64_t)       /* timestamp */
-               + sizeof(uint32_t)       /* cpu_id */
-               + sizeof(uint32_t)       /* alert_type */
-               + sizeof(uint64_t) * 4;  /* rip, cr3, gpa, info */
-    ASSERT_EQ(sum, sizeof(wire_alert_t));
+    ASSERT_EQ(W_TYPE_COUNT,         19);
 }
 
 TEST(test_round_trip_through_raw_bytes)
 {
-    /* Fill a struct, copy out to bytes, copy back in, verify every
-     * field survives — simulating kernel→userspace transport. */
+    /* Fill a record, copy out as bytes, copy back — every field
+     * survives.  Simulates the kernel→userspace transport. */
     wire_alert_t src = {
-        .timestamp  = 0x0123456789ABCDEFull,
+        .ts_ns      = 0x0123456789ABCDEFull,
         .cpu_id     = 0xDEADBEEFu,
         .alert_type = W_RANSOMWARE,
-        .guest_rip  = 0xFFFFFFFF80100000ull,
-        .guest_cr3  = 0x00000000187AE000ull,
-        .target_gpa = 0xFEE00000ull,
         .info       = 0xCAFEF00DFEEDC0DEull,
     };
     uint8_t buf[sizeof(wire_alert_t)];
@@ -160,24 +141,21 @@ TEST(test_round_trip_through_raw_bytes)
     wire_alert_t dst;
     memcpy(&dst, buf, sizeof(dst));
 
-    ASSERT_EQ(dst.timestamp,  src.timestamp);
+    ASSERT_EQ(dst.ts_ns,      src.ts_ns);
     ASSERT_EQ(dst.cpu_id,     src.cpu_id);
     ASSERT_EQ(dst.alert_type, src.alert_type);
-    ASSERT_EQ(dst.guest_rip,  src.guest_rip);
-    ASSERT_EQ(dst.guest_cr3,  src.guest_cr3);
-    ASSERT_EQ(dst.target_gpa, src.target_gpa);
     ASSERT_EQ(dst.info,       src.info);
 }
 
-TEST(test_ring_buffer_records_do_not_overlap)
+TEST(test_ring_buffer_record_stride)
 {
-    /* A userspace reader iterates records by stepping sizeof(alert_t)
-     * bytes.  Verify that stepping exactly that many bytes lands on
-     * the start of the next record for an array of 8. */
+    /* Userspace iterates the ring by stepping sizeof(record) bytes.
+     * Verify an array of 8 records with distinct cpu_ids reads back
+     * the same distinct values after byte-stepping. */
     wire_alert_t ring[8];
     memset(ring, 0, sizeof(ring));
     for (unsigned i = 0; i < 8; i++)
-        ring[i].cpu_id = 0x1000 + i;
+        ring[i].cpu_id = 0x1000u + i;
 
     uint8_t *p = (uint8_t *)ring;
     for (unsigned i = 0; i < 8; i++) {
@@ -187,20 +165,37 @@ TEST(test_ring_buffer_records_do_not_overlap)
     }
 }
 
+TEST(test_info_field_preserves_full_64_bits)
+{
+    /* Some callers pack two 32-bit values (expected, actual CRC) in
+     * info.  Verify high and low halves both survive the wire. */
+    wire_alert_t src = {
+        .ts_ns      = 0,
+        .cpu_id     = 0,
+        .alert_type = W_INTEGRITY_FAIL,
+        .info       = ((uint64_t)0xAABBCCDDu << 32) | 0x11223344u,
+    };
+    uint8_t buf[sizeof(src)];
+    memcpy(buf, &src, sizeof(src));
+    wire_alert_t dst;
+    memcpy(&dst, buf, sizeof(dst));
+    ASSERT_EQ((uint32_t)(dst.info >> 32), 0xAABBCCDDu);
+    ASSERT_EQ((uint32_t)(dst.info & 0xFFFFFFFFu), 0x11223344u);
+}
+
 int main(void)
 {
-    printf("GhostRing alert wire-format ABI tests\n");
-    printf("=====================================\n");
+    printf("GhostRing /dev/ghostring wire-record ABI tests\n");
+    printf("==============================================\n");
 
-    RUN_TEST(test_alert_total_size_is_48_bytes);
+    RUN_TEST(test_wire_record_is_24_bytes);
     RUN_TEST(test_field_offsets_frozen);
     RUN_TEST(test_field_sizes_frozen);
-    RUN_TEST(test_fits_in_one_cache_line);
-    RUN_TEST(test_alert_type_enum_values_locked);
-    RUN_TEST(test_alert_type_count_matches_last_plus_one);
-    RUN_TEST(test_struct_has_no_unexpected_padding);
+    RUN_TEST(test_no_padding_on_x86_64);
+    RUN_TEST(test_alert_type_values_locked);
     RUN_TEST(test_round_trip_through_raw_bytes);
-    RUN_TEST(test_ring_buffer_records_do_not_overlap);
+    RUN_TEST(test_ring_buffer_record_stride);
+    RUN_TEST(test_info_field_preserves_full_64_bits);
 
     REPORT();
 }

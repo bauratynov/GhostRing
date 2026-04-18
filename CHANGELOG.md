@@ -7,6 +7,36 @@ research previews where the public API may shift between tags.
 
 ## [Unreleased]
 
+### Added
+
+- Regression-lock test suite expanded to cover the invariants
+  discovered during v0.1.0 bring-up.  Each suite is named after
+  the rule it protects and refers to the SDM section number in its
+  header comment.  Covered so far: VMX capability-MSR adjustment,
+  CR0/CR4 fixed bits, VM-entry interruption-information field
+  layout, VMCS field encodings, segment access-rights / RFLAGS /
+  selector encoding, EPT entry and EPTP layout, pin/primary/secondary
+  exec-control bit positions, MSR bitmap bit arithmetic, MTRR
+  memory types, VM-exit reason codes, allocator stress and
+  fragmentation, CRC32C polynomial, hypercall IDs, alert ring
+  semantics and on-the-wire layout, DKOM generation-counter
+  semantics, platform virt↔phys round-trip.
+- `docs/WINDOWS-BUILD.md` — full VS 2022 + WDK recipe for building,
+  signing, and loading the Windows KMDF loader.
+- `docs/RESEARCH-NOTES.md` — running log of competitor and
+  literature review (HVMI archival, SimpleVisor licensing, etc.).
+
+### Changed
+
+- `src/monitor/integrity.c` — corrected comment that referred to
+  the IEEE 802.3 polynomial; the code actually uses the Castagnoli
+  CRC32C polynomial (0x82F63B78) via SSE4.2.
+- `src/vmx/vmx_vmcs.c` — after writing `VMCS_SECONDARY_EXEC_CTRL`
+  the field is now read back and any mismatch is logged.  Catches
+  the Hyper-V case where secondary bits are silently dropped.
+- `README.md` — 'Why now' paragraph citing Bitdefender HVMI's
+  January 2026 archival as the market opening we move into.
+
 ### Planned
 
 - Clean `rmmod` via `kgdb`-guided repair of the `.Lleave_vmx` asm
