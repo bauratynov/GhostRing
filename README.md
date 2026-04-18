@@ -341,6 +341,7 @@ encoding/decoding. No hardware virtualization required.
 | [docs/DEMO.md](docs/DEMO.md)      | operator    | Copy-paste bring-up: Hyper-V setup, kernel command line, load steps   |
 | [docs/DETECTORS.md](docs/DETECTORS.md) | architect | All 19 detector slots with MITRE ATT&CK technique, method, source file |
 | [docs/BAREMETAL.md](docs/BAREMETAL.md) | operator | Install on a dedicated Intel box — what changes vs Hyper-V nested    |
+| [docs/WINDOWS-BUILD.md](docs/WINDOWS-BUILD.md) | Windows dev | Visual Studio + WDK build, test-signing, sc start / stop recipe  |
 | [docs/KGDB.md](docs/KGDB.md)      | kernel dev  | Attach gdb-multiarch to GhostRing via second COM port and named pipe |
 | [docs/SIEM-integration.md](docs/SIEM-integration.md) | SOC engineer | Turnkey Splunk HEC / Filebeat / Kafka configs for alert ingestion |
 | [docs/THREAT-MODEL.md](docs/THREAT-MODEL.md) | architect  | Adversary tiers, trust boundaries, detection reliability table        |
