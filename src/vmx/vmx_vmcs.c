@@ -613,6 +613,12 @@ gr_vmx_setup_vmcs(gr_vmx_vcpu_t *vcpu)
      * succeeds.  Guest RSP matches the hypervisor stack so that the
      * restore function sees a valid stack frame.
      */
+    /*
+     * GUEST_RIP and GUEST_RSP are written to VMCS by gr_vmx_launch
+     * immediately before VMLAUNCH: the caller's live RSP and a label
+     * inside the asm stub that sits right after the vmlaunch instr.
+     * These stub writes below are placeholders (will be overwritten).
+     */
     gr_vmwrite(VMCS_GUEST_RIP,    (uintptr_t)gr_vmx_restore_guest);
     gr_vmwrite(VMCS_GUEST_RSP,    vcpu->hv_stack + vcpu->hv_stack_size);
     /* Force a clean RFLAGS: reserved bit 1 = 1, everything else 0.

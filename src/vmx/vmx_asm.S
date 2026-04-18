@@ -163,20 +163,75 @@ gr_vmx_entry:
  *            >0 — VM_INSTRUCTION_ERROR field value on failure
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/*
+ * gr_vmx_launch — Proper blue-pill VMLAUNCH.
+ *
+ * Before VMLAUNCH we write the CURRENT host RSP, RIP(=.Lresume) and
+ * RFLAGS into VMCS_GUEST_{RSP,RIP,RFLAGS}.  The CPU therefore transitions
+ * the current running thread into VMX non-root mode at the instruction
+ * right after vmlaunch — same stack, same next instruction.  The caller
+ * returns to its original caller as if VMLAUNCH never happened, except
+ * the processor is now executing under our hypervisor's control.
+ *
+ * VMCS field encodings used directly here:
+ *   VMCS_GUEST_RSP    = 0x681C
+ *   VMCS_GUEST_RIP    = 0x681E
+ *   VMCS_GUEST_RFLAGS = 0x6820
+ *   VM_INSTRUCTION_ERROR (on failure) = 0x4400
+ */
 .global gr_vmx_launch
 .type   gr_vmx_launch, @function
 gr_vmx_launch:
-    vmlaunch
+    /* Save callee-saved registers — these become guest state once
+     * VMLAUNCH succeeds, and restored from stack again on the way back. */
+    push    rbx
+    push    rbp
+    push    r12
+    push    r13
+    push    r14
+    push    r15
+    pushfq                       /* save RFLAGS on stack */
 
+    /* Write guest RSP = current host RSP (stack is identical). */
+    mov     rcx, 0x681C
+    vmwrite rcx, rsp
+
+    /* Write guest RIP = label .Lresume — the CPU jumps here as guest. */
+    lea     rax, [rip + .Lresume]
+    mov     rcx, 0x681E
+    vmwrite rcx, rax
+
+    /* Write guest RFLAGS = currently saved RFLAGS (top of stack). */
+    mov     rax, [rsp]
+    mov     rcx, 0x6820
+    vmwrite rcx, rax
+
+    vmlaunch
     /*
-     * If VMLAUNCH succeeds, the processor transfers to GUEST_RIP and
-     * this code is never reached.  Reaching here means failure.
+     * VMLAUNCH success => CPU jumps to .Lresume (below) already in
+     * non-root mode, execution continues transparently.
      *
-     * Read VM_INSTRUCTION_ERROR (VMCS field 0x4400) to get the error.
-     * VMCS encoding 0x4400 = VM_INSTRUCTION_ERROR.
+     * VMLAUNCH failure => falls through to the error path; read
+     * VM_INSTRUCTION_ERROR and pop state for a normal C return.
      */
     mov     rcx, 0x4400
-    vmread  rax, rcx        /* RAX = error code (return value) */
+    vmread  rax, rcx             /* RAX = non-zero error code */
+    jmp     .Lreturn
+
+.Lresume:
+    /* Guest resumes here.  RSP points at our saved RFLAGS (since we
+     * wrote RSP into VMCS_GUEST_RSP just before vmlaunch).  popfq/pops
+     * below will unwind the stack exactly as a C-callable function. */
+    xor     eax, eax             /* return 0 on success */
+
+.Lreturn:
+    popfq
+    pop     r15
+    pop     r14
+    pop     r13
+    pop     r12
+    pop     rbp
+    pop     rbx
     ret
 
 .size gr_vmx_launch, . - gr_vmx_launch
