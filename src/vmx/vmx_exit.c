@@ -96,13 +96,18 @@ handle_cpuid(gr_vmx_guest_ctx_t *ctx)
      * the trigger (we ignore subleaf so both the glue.c and loader-
      * side callers work without having to agree on a subleaf value).
      */
+    /*
+     * NOTE: clean devirtualisation (magic-CPUID -> VMXOFF -> return to
+     * guest) is disabled in v0.1.0.  The asm unwind path has a subtle
+     * register/stack corruption we couldn't isolate without an actual
+     * kernel debugger attached; the symptom is that `rmmod ghostring`
+     * panics the guest.  For now the hypervisor keeps running until
+     * the VM is power-cycled — that is the documented workflow in
+     * docs/DEMO.md.  Re-enable once we wire up kgdb.
+     */
+    (void)subleaf;
     if (leaf == 0x47520001) {
-        gr_exit_vm_flag = 1;
-        GR_LOG("vmx_exit: magic CPUID hit, leaf=", (uint64_t)leaf);
-        GR_LOG("vmx_exit: guest RIP at CPUID=", gr_vmread(VMCS_GUEST_RIP));
-        GR_LOG("vmx_exit: guest RSP at CPUID=", gr_vmread(VMCS_GUEST_RSP));
-        GR_LOG_STR("vmx_exit: flag set — asm will VMXOFF");
-        (void)subleaf;
+        GR_LOG_STR("vmx_exit: magic CPUID observed (devirt NYI — power-cycle VM to reload)");
     }
 
     switch (leaf) {
